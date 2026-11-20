@@ -83,9 +83,10 @@ SEED_BITS: Final[int] = 31
 DEEPSEEK_MODEL: Final[str] = "deepseek-flash"
 DEEPSEEK_BASE_URL: Final[str] = "https://api.deepseek.com"
 SYSTEM_MIKE_PROMPT_PATH: Final[Path] = PROJECT_ROOT / "agent" / "prompts" / "system_mike.txt"
-AGENT_MAX_TOOL_ROUNDS: Final[int] = 5
-AGENT_HISTORY_LIMIT: Final[int] = 8
+AGENT_MAX_TOOL_ROUNDS: Final[int] = 2
+AGENT_HISTORY_LIMIT: Final[int] = 4
 AGENT_TEMPERATURE: Final[float] = 0.7
+AGENT_MAX_TOKENS: Final[int] = 180
 
 # Herramientas del agente.
 REST_HEAL: Final[int] = 5
@@ -279,4 +280,19 @@ TRAIT_DESCRIPTIONS: Final[dict[str, str]] = {
 TRAIT_UNLOCK_DEATHS: Final[int] = 10
 META_UNLOCK_VETERAN: Final[str] = "trait_veteran"
 GLOBAL_MEMORY_IMPORTANCE: Final[int] = 3
-GLOBAL_MEMORY_LIMIT: Final[int] = 5
+GLOBAL_MEMORY_LIMIT: Final[int] = 3
+
+# Comportamiento autónomo local (no consume tokens de API).
+INSTINCT_HUNGER_THRESHOLD: Final[int] = 60
+INSTINCT_THIRST_THRESHOLD: Final[int] = 60
+INSTINCT_INFECTION_THRESHOLD: Final[int] = 65
+INSTINCT_HEAL_THRESHOLD: Final[int] = 45
+INSTINCT_FLEE_HEALTH: Final[int] = 30
+INSTINCT_SCAVENGE_CHANCE: Final[float] = 0.22
+INSTINCT_SCAVENGE_LOW_CHANCE: Final[float] = 0.45
+INSTINCT_LOW_SUPPLIES: Final[int] = 2
+
+# Zoom de cámara y tamaño de entidades.
+RENDER_SCALE: Final[float] = 0.875
+RENDER_TILE_SIZE: Final[int] = 14
+ENTITY_DRAW_SIZE: Final[int] = 24

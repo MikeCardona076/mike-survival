@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 
 from agent.client import AgentClient, AgentUnavailable
-from config import DEEPSEEK_MODEL
+from config import AGENT_MAX_TOKENS, DEEPSEEK_MODEL
 from game.entities import Mike
 
 
@@ -95,12 +95,14 @@ def test_client_executes_tool_and_returns_final_text() -> None:
     assert session.mike.inventory.count("food") == 1
     assert [message.role for message in session.chat] == ["operator", "tool", "assistant"]
     assert fake.chat.completions.calls[0]["model"] == DEEPSEEK_MODEL
+    assert fake.chat.completions.calls[0]["max_tokens"] == AGENT_MAX_TOKENS
     assert fake.chat.completions.calls[0]["extra_body"] == {"thinking": {"type": "disabled"}}
     assert fake.chat.completions.calls[0]["tool_choice"] == "auto"
 
 
 def test_client_without_api_key_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.setattr("agent.client._load_env_file", lambda: None)
     client = AgentClient(FakeSession())
 
     assert client.available is False

@@ -22,6 +22,11 @@ más `veterano` cuando se desbloquea). Al morir, Mike deja un recuerdo
 global que aparece en el prompt de las siguientes runs. Las estadísticas
 persisten en `stats` y la meta-progresión en `meta_progression`.
 
+Mike tiene **instinto propio**: come, bebe, se cura, combate, rebusca y
+avanza hacia el Refugio 7 sin gastar tokens. DeepSeek solo se consulta
+cuando el Operador escribe; cada mensaje limita a 2 rondas de tools,
+180 tokens de salida y 4 mensajes de historial.
+
 ## Cómo jugar
 
 ### Windows: un solo comando

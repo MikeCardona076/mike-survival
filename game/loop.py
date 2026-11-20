@@ -8,12 +8,25 @@ import sqlite3
 from config import (
     GLOBAL_MEMORY_IMPORTANCE,
     INITIAL_ZOMBIES,
+    INSTINCT_FLEE_HEALTH,
+    INSTINCT_HEAL_THRESHOLD,
+    INSTINCT_HUNGER_THRESHOLD,
+    INSTINCT_INFECTION_THRESHOLD,
+    INSTINCT_LOW_SUPPLIES,
+    INSTINCT_SCAVENGE_CHANCE,
+    INSTINCT_SCAVENGE_LOW_CHANCE,
+    INSTINCT_THIRST_THRESHOLD,
+    ITEM_FOOD,
+    ITEM_NAMES,
+    ITEM_WATER,
     MAX_ZOMBIES,
     META_UNLOCK_VETERAN,
     RUN_STATUS_DEAD,
+    SCAVENGE_ITEMS,
     TILE_SIZE,
     TRAIT_UNLOCK_DEATHS,
     TURN_SECONDS,
+    WALKABLE_TILE_IDS,
     ZOMBIE_SPAWN_CHANCE,
 )
 from db.repositories import (
@@ -42,11 +55,14 @@ class GameSession:
         run: Run,
         connection: sqlite3.Connection,
         mike: Mike | None = None,
+        *,
+        instincts: bool = True,
     ) -> None:
         self.run = run
         self.connection = connection
         self.world = World(run.id, run.seed, connection)
         self.mike = Mike.from_trait(run.trait) if mike is None else mike
+        self._instincts_enabled = instincts
         self.elapsed_seconds = 0.0
         self.events: list[str] = []
         self._state_repository = AgentStateRepository(connection)
@@ -131,8 +147,9 @@ class GameSession:
             self.advance_turn()
 
     def advance_turn(self) -> None:
-        """Ejecuta un turno: desgaste, zombis y eventos; guarda el estado."""
+        """Ejecuta un turno: desgaste, instinto, zombis y eventos; guarda."""
         events = self.mike.advance_turn()
+        events.extend(self._instinct_action())
         events.extend(self._update_zombies())
         if self.mike.alive:
             rolled = maybe_event(self)
@@ -144,6 +161,103 @@ class GameSession:
         self.persist()
         if self.is_over:
             self._finish_run()
+
+    def _instinct_action(self) -> list[str]:
+        """Comportamiento autónomo local de Mike, sin consumir tokens."""
+        mike = self.mike
+        events: list[str] = []
+        if not self._instincts_enabled or not mike.alive:
+            return events
+
+        if mike.health <= INSTINCT_HEAL_THRESHOLD and mike.use_bandage():
+            events.append("Mike se venda las heridas por instinto.")
+        if mike.infection >= INSTINCT_INFECTION_THRESHOLD and mike.use_suppressor():
+            events.append("Mike usa un supresor al notar el virus.")
+        if mike.hunger >= INSTINCT_HUNGER_THRESHOLD and mike.eat():
+            events.append("Mike come una ración por su cuenta.")
+        if mike.thirst >= INSTINCT_THIRST_THRESHOLD and mike.drink():
+            events.append("Mike bebe agua por su cuenta.")
+        if events:
+            return events
+
+        alive = [zombie for zombie in self.zombies if zombie.alive]
+        if alive:
+            nearest = min(alive, key=lambda zombie: zombie.distance_to(mike))
+            distance = nearest.distance_to(mike)
+            if distance <= 1:
+                message, killed = attack_zombie(mike, nearest)
+                events.append(f"Mike ataca por instinto. {message}")
+                if killed:
+                    self.zombies.remove(nearest)
+                    self._event_repository.add(self.run.id, "combat", message)
+                return events
+            if distance <= 3 and mike.health <= INSTINCT_FLEE_HEALTH:
+                if self._step_away(nearest):
+                    events.append("Mike retrocede para ganar distancia.")
+                return events
+
+        found = self._maybe_scavenge()
+        if found is not None:
+            events.append(found)
+        self._step_toward_refugio()
+        return events
+
+    def _step_toward_refugio(self) -> bool:
+        """Avanza un tile hacia el Refugio 7 si el terreno lo permite."""
+        delta_x = self.run.refugio7_x - int(self.mike.pos_x)
+        delta_y = self.run.refugio7_y - int(self.mike.pos_y)
+        steps = sorted(
+            (
+                ((1 if delta_x > 0 else -1), 0) if delta_x else (0, 0),
+                (0, (1 if delta_y > 0 else -1)) if delta_y else (0, 0),
+            ),
+            key=lambda step: abs(step[0]) + abs(step[1]),
+            reverse=True,
+        )
+        for step_x, step_y in steps:
+            if step_x == 0 and step_y == 0:
+                continue
+            target_x = int(self.mike.pos_x) + step_x
+            target_y = int(self.mike.pos_y) + step_y
+            if int(self.world.get_tile(target_x, target_y)) not in WALKABLE_TILE_IDS:
+                continue
+            self.mike.pos_x = float(target_x)
+            self.mike.pos_y = float(target_y)
+            return True
+        return False
+
+    def _step_away(self, zombie: Zombie) -> bool:
+        delta_x = int(self.mike.pos_x) - zombie.x
+        delta_y = int(self.mike.pos_y) - zombie.y
+        candidates = (
+            ((1 if delta_x > 0 else -1), 0),
+            (0, (1 if delta_y > 0 else -1)),
+        )
+        for step_x, step_y in candidates:
+            target_x = int(self.mike.pos_x) + step_x
+            target_y = int(self.mike.pos_y) + step_y
+            if int(self.world.get_tile(target_x, target_y)) not in WALKABLE_TILE_IDS:
+                continue
+            self.mike.pos_x = float(target_x)
+            self.mike.pos_y = float(target_y)
+            return True
+        return False
+
+    def _maybe_scavenge(self) -> str | None:
+        if not self.mike.alive:
+            return None
+        supplies = self.mike.inventory.count(ITEM_FOOD) + self.mike.inventory.count(ITEM_WATER)
+        chance = (
+            INSTINCT_SCAVENGE_LOW_CHANCE
+            if supplies <= INSTINCT_LOW_SUPPLIES
+            else INSTINCT_SCAVENGE_CHANCE
+        )
+        rng = random.Random((self.run.seed << 11) ^ (self.mike.turn_count * 53))
+        if rng.random() >= chance:
+            return None
+        item = rng.choice(SCAVENGE_ITEMS)
+        self.mike.inventory.add(item, 1)
+        return f"Mike rebusca y encuentra {ITEM_NAMES[item]}."
 
     def _update_zombies(self) -> list[str]:
         events: list[str] = []

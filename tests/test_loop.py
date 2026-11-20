@@ -36,7 +36,7 @@ def test_session_advances_turns_and_persists(connection: sqlite3.Connection) -> 
 
 def test_session_death_finishes_run(connection: sqlite3.Connection) -> None:
     run = RunRepository(connection).create(seed=2020, refugio7_x=0, refugio7_y=0)
-    session = GameSession(run, connection)
+    session = GameSession(run, connection, instincts=False)
 
     for _ in range(100):
         session.advance_turn()
@@ -46,6 +46,18 @@ def test_session_death_finishes_run(connection: sqlite3.Connection) -> None:
     assert finished is not None
     assert finished.status == RUN_STATUS_DEAD
     assert finished.cause_of_death is not None
+
+
+def test_instinct_attacks_adjacent_zombie(connection: sqlite3.Connection) -> None:
+    run = RunRepository(connection).create(seed=2121, refugio7_x=0, refugio7_y=0)
+    session = GameSession(run, connection)
+    session.zombies = [
+        Zombie.create("walker", int(session.mike.pos_x) + 1, int(session.mike.pos_y))
+    ]
+
+    session.advance_turn()
+
+    assert any("instinto" in event for event in session.events)
 
 
 def test_session_spawns_zombies(connection: sqlite3.Connection) -> None:

@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 from agent.tools import TOOL_SPECS, execute_tool
 from config import (
     AGENT_HISTORY_LIMIT,
+    AGENT_MAX_TOKENS,
     AGENT_MAX_TOOL_ROUNDS,
     AGENT_TEMPERATURE,
     DEEPSEEK_BASE_URL,
@@ -152,6 +153,7 @@ class AgentClient:
                     tools=TOOL_SPECS,
                     tool_choice="auto",
                     temperature=AGENT_TEMPERATURE,
+                    max_tokens=AGENT_MAX_TOKENS,
                     extra_body={"thinking": {"type": "disabled"}},
                 )
             except Exception as error:

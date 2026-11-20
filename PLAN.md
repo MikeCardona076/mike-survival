@@ -5,10 +5,10 @@ de cada turno y lo actualiza al final de cada fase.
 
 ## ESTADO ACTUAL
 
-- **Fase en curso:** 3 (pendiente de aprobación del Operador)
-- **Tarea actual:** Fase 2 cerrada; esperando aprobación para iniciar Fase 3
+- **Fase en curso:** 4
+- **Tarea actual:** Cliente DeepSeek con function calling y 10 herramientas
 - **Última actualización:** 2026-11-19
-- **Commit de referencia:** faf6980
+- **Commit de referencia:** 338207e
 
 ## PLAN DE FASE 1 (COMPLETADO)
 
@@ -37,6 +37,26 @@ de cada turno y lo actualiza al final de cada fase.
 5. Conectar `main.py` a una ventana pygame 1280×720 centrada en el chunk
    (0,0); tests headless, verificación Docker y cierre de fase.
 
+## PLAN DE FASE 3
+
+1. Implementar `Inventory` y la entidad `Mike` con salud, hambre, sed,
+   infección, batería y posición.
+2. Implementar `advance_turn()` con desgaste y muerte por inanición, más
+   acciones de comer, beber, usar supresor y venda.
+3. Añadir `GameSession` en `loop.py` con reloj de turnos y persistencia
+   del estado en `agent_state`.
+4. Dibujar las 5 barras en `ui/hud.py` e integrarlas en `main.py`.
+5. Tests: 100 turnos sin comer → muerte, inventario, HUD headless.
+
+## PLAN DE FASE 4
+
+1. Implementar `agent/tools.py` con las 10 herramientas y sus esquemas.
+2. Implementar `agent/client.py` con bucle de function calling sobre
+   `deepseek-flash`, pensamiento desactivado y carga del system prompt.
+3. Añadir a `GameSession` el registro de chat y memorias.
+4. Escribir el system prompt de Mike con su historia y reglas de tools.
+5. Tests con cliente falso: tool call → ejecución → respuesta final.
+
 ## REGLAS DE ESTE ARCHIVO
 
 1. Antes de empezar una tarea atómica, el agente escribe debajo de
@@ -51,8 +71,8 @@ de cada turno y lo actualiza al final de cada fase.
 
 - [x] **Fase 1** — Esqueleto, BD y repositorios SQLite ✅
 - [x] **Fase 2** — Mundo procedural con chunks y Perlin noise ✅
-- [ ] **Fase 3** — Mike, HUD y actualización de estado
-- [ ] **Fase 4** — Cliente DeepSeek (`deepseek-flash`) con function calling
+- [x] **Fase 3** — Mike, HUD y actualización de estado ✅
+- [ ] **Fase 4** — Cliente DeepSeek (`deepseek-flash`) con function calling — EN CURSO
 - [ ] **Fase 5** — Chat bidireccional Operador ↔ Mike
 - [ ] **Fase 6** — Zombis, combate y eventos narrativos
 - [ ] **Fase 7** — Assets procedurales (sprites + SFX + música)
@@ -140,3 +160,5 @@ de cada turno y lo actualiza al final de cada fase.
 [F2] Generación de chunks con 2 capas Perlin y persistencia — OK (a1f1a43)
 [F2] Renderer con viewport culling y ventana pygame — OK (faf6980)
 [F2] Verificación Docker: 28 tests, ruff, black y smoke de ventana — OK (faf6980)
+[F3] Mike, inventario, turnos y HUD — OK (338207e)
+[F4] Cliente DeepSeek con function calling y 10 tools — INICIO

@@ -247,6 +247,48 @@ class AgentStateRepository:
         if cursor.rowcount == 0:
             raise LookupError(f"No existe estado del agente para la run {run_id}")
 
+    def update(
+        self,
+        run_id: int,
+        *,
+        health: int,
+        hunger: int,
+        thirst: int,
+        infection: int,
+        radio_battery: int,
+        pos_x: float,
+        pos_y: float,
+        inventory: str,
+        turn_count: int,
+        objective: str | None = None,
+    ) -> None:
+        """Actualiza el estado completo de Mike y la marca de tiempo."""
+        cursor = self._connection.execute(
+            """
+            UPDATE agent_state
+            SET health = ?, hunger = ?, thirst = ?, infection = ?,
+                radio_battery = ?, pos_x = ?, pos_y = ?, inventory = ?,
+                turn_count = ?, objective = COALESCE(?, objective),
+                updated_at = datetime('now')
+            WHERE run_id = ?
+            """,
+            (
+                health,
+                hunger,
+                thirst,
+                infection,
+                radio_battery,
+                pos_x,
+                pos_y,
+                inventory,
+                turn_count,
+                objective,
+                run_id,
+            ),
+        )
+        if cursor.rowcount == 0:
+            raise LookupError(f"No existe estado del agente para la run {run_id}")
+
 
 class ChatRepository:
     """Operaciones sobre la tabla ``chat_history``."""

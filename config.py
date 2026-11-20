@@ -82,3 +82,48 @@ SEED_BITS: Final[int] = 31
 # Agente DeepSeek.
 DEEPSEEK_MODEL: Final[str] = "deepseek-flash"
 DEEPSEEK_BASE_URL: Final[str] = "https://api.deepseek.com"
+
+# Simulación por turnos.
+TURN_SECONDS: Final[float] = 5.0
+MAX_FRAME_DELTA: Final[float] = 0.25
+HUNGER_PER_TURN: Final[int] = 2
+THIRST_PER_TURN: Final[int] = 3
+INFECTION_PER_TURN: Final[int] = 1
+HUNGER_CRITICAL: Final[int] = 80
+THIRST_CRITICAL: Final[int] = 80
+STARVATION_DAMAGE: Final[int] = 2
+DEHYDRATION_DAMAGE: Final[int] = 3
+INFECTION_DAMAGE: Final[int] = 2
+
+# Objetos e inventario.
+ITEM_FOOD: Final[str] = "food"
+ITEM_WATER: Final[str] = "water"
+ITEM_SUPPRESSOR: Final[str] = "suppressor"
+ITEM_BANDAGE: Final[str] = "bandage"
+ITEM_SCRAP: Final[str] = "scrap"
+FOOD_HUNGER_RELIEF: Final[int] = 45
+WATER_THIRST_RELIEF: Final[int] = 55
+BANDAGE_HEAL: Final[int] = 25
+SUPPRESSOR_RELIEF: Final[int] = 40
+STARTING_INVENTORY: Final[dict[str, int]] = {
+    ITEM_FOOD: 2,
+    ITEM_WATER: 2,
+    ITEM_SUPPRESSOR: 1,
+    ITEM_BANDAGE: 1,
+}
+
+# HUD.
+HUD_MARGIN: Final[int] = 14
+HUD_LABEL_WIDTH: Final[int] = 92
+HUD_BAR_WIDTH: Final[int] = 190
+HUD_BAR_HEIGHT: Final[int] = 14
+HUD_ROW_HEIGHT: Final[int] = 22
+HUD_FONT_SIZE: Final[int] = 18
+HUD_PANEL_COLOR: Final[tuple[int, int, int]] = (18, 20, 24)
+HUD_TEXT_COLOR: Final[tuple[int, int, int]] = (225, 225, 215)
+HUD_BAR_BACKGROUND: Final[tuple[int, int, int]] = (52, 54, 58)
+HEALTH_BAR_COLOR: Final[tuple[int, int, int]] = (190, 58, 58)
+HUNGER_BAR_COLOR: Final[tuple[int, int, int]] = (200, 142, 54)
+THIRST_BAR_COLOR: Final[tuple[int, int, int]] = (62, 142, 205)
+INFECTION_BAR_COLOR: Final[tuple[int, int, int]] = (132, 184, 64)
+BATTERY_BAR_COLOR: Final[tuple[int, int, int]] = (222, 200, 68)

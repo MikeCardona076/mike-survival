@@ -18,7 +18,11 @@ from assets.audio import AudioManager
 from assets.sprites import SpriteSet
 from config import (
     AUDIO_SAMPLE_RATE,
+    CHAT_HEIGHT,
     FPS,
+    GAME_OVER_COLOR,
+    GAME_OVER_OVERLAY,
+    GAME_OVER_TEXT,
     MAX_FRAME_DELTA,
     RADIO_COST_MAX,
     RADIO_COST_MIN,
@@ -55,6 +59,25 @@ def _play_event_sound(audio: AudioManager, text: str) -> None:
         audio.play("suppressor")
     elif "encuentra" in lower or "provisiones" in lower:
         audio.play("pickup")
+
+
+def _draw_game_over(
+    screen: pygame.Surface,
+    overlay: pygame.Surface,
+    title_font: pygame.font.Font,
+    small_font: pygame.font.Font,
+    cause: str | None,
+) -> None:
+    screen.blit(overlay, (0, 0))
+    title = title_font.render("MIKE HA MUERTO", True, GAME_OVER_COLOR)
+    subtitle = small_font.render(
+        f"Causa: {cause or 'desconocida'} · Pulsa Esc",
+        True,
+        GAME_OVER_TEXT,
+    )
+    center_y = (WINDOW_HEIGHT - CHAT_HEIGHT) // 2
+    screen.blit(title, title.get_rect(center=(WINDOW_WIDTH // 2, center_y)))
+    screen.blit(subtitle, subtitle.get_rect(center=(WINDOW_WIDTH // 2, center_y + 44)))
 
 
 def _send_operator_message(
@@ -123,6 +146,13 @@ def run_game(
         renderer = Renderer(screen, sprites)
         hud = Hud(screen)
         chat = ChatPanel(screen)
+        game_over_font = pygame.font.Font(None, 56)
+        game_over_small = pygame.font.Font(None, 24)
+        game_over_panel = pygame.Surface(
+            (WINDOW_WIDTH, WINDOW_HEIGHT - CHAT_HEIGHT),
+            pygame.SRCALPHA,
+        )
+        game_over_panel.fill(GAME_OVER_OVERLAY)
 
         shown_events = 0
         game_over_shown = False
@@ -162,7 +192,15 @@ def run_game(
                 session.mike,
                 session.zombies,
             )
-            hud.draw(session.mike)
+            hud.draw(session.mike, session.run.trait)
+            if session.is_over:
+                _draw_game_over(
+                    screen,
+                    game_over_panel,
+                    game_over_font,
+                    game_over_small,
+                    session.mike.cause_of_death,
+                )
             chat.draw()
             pygame.display.flip()
 

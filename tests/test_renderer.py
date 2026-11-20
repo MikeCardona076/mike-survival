@@ -16,7 +16,7 @@ from config import (  # noqa: E402
     CAMERA_START_Y,
     CHUNK_PIXELS,
     CHUNK_SIZE,
-    TILE_COLORS,
+    TILE_COLOR_VARIANTS,
     TILE_GRASS,
     WINDOW_HEIGHT,
     WINDOW_WIDTH,
@@ -78,7 +78,7 @@ def test_draw_paints_visible_tiles(screen: pygame.Surface) -> None:
 
     assert drawn == 9 * CHUNK_SIZE * CHUNK_SIZE
     center_color = tuple(screen.get_at((WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)))[:3]
-    assert center_color == TILE_COLORS[TILE_GRASS]
+    assert center_color in TILE_COLOR_VARIANTS[TILE_GRASS]
 
 
 def test_draw_culls_before_requesting_chunks(screen: pygame.Surface) -> None:

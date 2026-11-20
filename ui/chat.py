@@ -8,14 +8,18 @@ import pygame
 
 from config import (
     CHAT_BACKGROUND,
+    CHAT_BORDER_COLOR,
     CHAT_FONT_SIZE,
+    CHAT_HEADER_COLOR,
     CHAT_HEIGHT,
+    CHAT_INPUT_BACKGROUND,
     CHAT_INPUT_COLOR,
     CHAT_MARGIN,
     CHAT_MAX_ENTRIES,
     CHAT_MAX_INPUT,
     CHAT_MIKE_COLOR,
     CHAT_OPERATOR_COLOR,
+    CHAT_PANEL_ALPHA,
     CHAT_SYSTEM_COLOR,
     CHAT_TYPEWRITER_CPS,
     CHAT_VISIBLE_MESSAGES,
@@ -52,10 +56,7 @@ class ChatPanel:
         self._entries.append(ChatEntry(role, text))
         if len(self._entries) > CHAT_MAX_ENTRIES:
             self._entries = self._entries[-CHAT_MAX_ENTRIES:]
-        if role == "assistant":
-            self._typing_progress = 0.0
-        else:
-            self._typing_progress = float(len(text))
+        self._typing_progress = 0.0 if role == "assistant" else float(len(text))
 
     def update(self, delta_seconds: float) -> None:
         """Avanza el efecto typewriter del último mensaje de Mike."""
@@ -67,7 +68,8 @@ class ChatPanel:
         total = len(last.text)
         if self._typing_progress < total:
             self._typing_progress = min(
-                total, self._typing_progress + delta_seconds * CHAT_TYPEWRITER_CPS
+                total,
+                self._typing_progress + delta_seconds * CHAT_TYPEWRITER_CPS,
             )
 
     def visible_entries(self) -> list[ChatEntry]:
@@ -119,17 +121,57 @@ class ChatPanel:
         """Pinta el panel en la parte inferior de la pantalla."""
         screen_width, screen_height = self._screen.get_size()
         panel_rect = pygame.Rect(0, screen_height - CHAT_HEIGHT, screen_width, CHAT_HEIGHT)
-        pygame.draw.rect(self._screen, CHAT_BACKGROUND, panel_rect)
+        panel = pygame.Surface((screen_width, CHAT_HEIGHT), pygame.SRCALPHA)
+        pygame.draw.rect(
+            panel,
+            (*CHAT_BACKGROUND, CHAT_PANEL_ALPHA),
+            panel.get_rect(),
+            border_radius=12,
+        )
+        pygame.draw.rect(
+            panel,
+            (*CHAT_BORDER_COLOR, 190),
+            panel.get_rect(),
+            width=1,
+            border_radius=12,
+        )
+        self._screen.blit(panel, panel_rect.topleft)
 
         line_height = self._font.get_linesize()
         inner_width = screen_width - CHAT_MARGIN * 2
-        header = self._font.render("RADIO - ENLACE CON MIKE", True, CHAT_SYSTEM_COLOR)
-        self._screen.blit(header, (CHAT_MARGIN, panel_rect.top + CHAT_MARGIN // 2))
+        header_y = panel_rect.top + 10
+        pygame.draw.circle(
+            self._screen,
+            CHAT_HEADER_COLOR,
+            (CHAT_MARGIN + 4, header_y + 6),
+            4,
+        )
+        header = self._font.render("RADIO · ENLACE CON MIKE", True, CHAT_HEADER_COLOR)
+        self._screen.blit(header, (CHAT_MARGIN + 14, header_y))
 
-        input_y = panel_rect.bottom - CHAT_MARGIN - line_height
-        messages_top = panel_rect.top + CHAT_MARGIN + line_height
-        available_lines = max(1, (input_y - messages_top) // line_height)
+        input_height = line_height + 8
+        input_rect = pygame.Rect(
+            CHAT_MARGIN,
+            panel_rect.bottom - CHAT_MARGIN - input_height,
+            screen_width - CHAT_MARGIN * 2,
+            input_height,
+        )
+        pygame.draw.rect(
+            self._screen,
+            CHAT_INPUT_BACKGROUND,
+            input_rect,
+            border_radius=8,
+        )
+        pygame.draw.rect(
+            self._screen,
+            CHAT_BORDER_COLOR,
+            input_rect,
+            width=1,
+            border_radius=8,
+        )
 
+        messages_top = panel_rect.top + 10 + line_height + 6
+        available_lines = max(1, (input_rect.top - messages_top - 4) // line_height)
         colored_lines: list[tuple[str, tuple[int, int, int]]] = []
         prefixes = {"operator": "TÚ> ", "assistant": "MIKE> ", "system": "· "}
         colors = {
@@ -139,10 +181,8 @@ class ChatPanel:
         }
         for entry in self.visible_entries():
             prefix = prefixes.get(entry.role, "")
-            for index, line in enumerate(self._wrap(prefix + entry.text, inner_width)):
+            for line in self._wrap(prefix + entry.text, inner_width):
                 colored_lines.append((line, colors.get(entry.role, CHAT_INPUT_COLOR)))
-                if index >= available_lines:
-                    break
 
         for line, color in colored_lines[-available_lines:]:
             self._screen.blit(
@@ -151,5 +191,17 @@ class ChatPanel:
             )
             messages_top += line_height
 
-        input_surface = self._font.render(f"> {self._input}_", True, CHAT_INPUT_COLOR)
-        self._screen.blit(input_surface, (CHAT_MARGIN, input_y))
+        text_surface = self._font.render(
+            f"> {self._input}",
+            True,
+            CHAT_INPUT_COLOR,
+        )
+        self._screen.blit(text_surface, (input_rect.x + 8, input_rect.y + 4))
+        if pygame.time.get_ticks() // 500 % 2 == 0:
+            cursor_x = input_rect.x + 8 + text_surface.get_width()
+            pygame.draw.line(
+                self._screen,
+                CHAT_INPUT_COLOR,
+                (cursor_x + 2, input_rect.y + 5),
+                (cursor_x + 2, input_rect.bottom - 6),
+            )

@@ -64,14 +64,29 @@ ELEVATION_ROCK_THRESHOLD: Final[float] = 0.45
 MOISTURE_FOREST_THRESHOLD: Final[float] = 0.0
 
 # Paleta de terreno.
-COLOR_BACKGROUND: Final[tuple[int, int, int]] = (8, 10, 12)
+COLOR_BACKGROUND: Final[tuple[int, int, int]] = (10, 13, 16)
 TILE_COLORS: Final[dict[int, tuple[int, int, int]]] = {
-    TILE_WATER: (31, 58, 82),
-    TILE_SAND: (156, 143, 98),
-    TILE_GRASS: (72, 96, 56),
-    TILE_FOREST: (42, 66, 44),
-    TILE_ROCK: (94, 92, 88),
+    TILE_WATER: (40, 86, 128),
+    TILE_SAND: (196, 176, 118),
+    TILE_GRASS: (94, 128, 68),
+    TILE_FOREST: (52, 90, 56),
+    TILE_ROCK: (116, 114, 106),
 }
+TILE_COLOR_VARIANTS: Final[dict[int, tuple[tuple[int, int, int], ...]]] = {
+    TILE_WATER: ((34, 76, 116), (40, 86, 128), (46, 94, 138)),
+    TILE_SAND: ((186, 166, 108), (196, 176, 118), (204, 184, 126)),
+    TILE_GRASS: ((86, 118, 62), (94, 128, 68), (104, 138, 76)),
+    TILE_FOREST: ((46, 82, 50), (52, 90, 56), (60, 100, 62)),
+    TILE_ROCK: ((104, 102, 96), (116, 114, 106), (126, 124, 114)),
+}
+DECOR_TREE_DARK: Final[tuple[int, int, int]] = (28, 58, 36)
+DECOR_TREE_LIGHT: Final[tuple[int, int, int]] = (68, 110, 62)
+DECOR_TRUNK: Final[tuple[int, int, int]] = (86, 64, 42)
+DECOR_GRASS: Final[tuple[int, int, int]] = (132, 164, 88)
+DECOR_ROCK: Final[tuple[int, int, int]] = (146, 144, 134)
+DECOR_SAND: Final[tuple[int, int, int]] = (224, 206, 150)
+WATER_SPARKLE: Final[tuple[int, int, int]] = (132, 190, 226)
+SHADOW_COLOR: Final[tuple[int, int, int]] = (18, 26, 20)
 
 # Runs.
 RUN_STATUS_ALIVE: Final[str] = "alive"
@@ -149,18 +164,22 @@ HUD_LABEL_WIDTH: Final[int] = 92
 HUD_BAR_WIDTH: Final[int] = 190
 HUD_BAR_HEIGHT: Final[int] = 14
 HUD_ROW_HEIGHT: Final[int] = 22
+HUD_FOOTER_HEIGHT: Final[int] = 22
 HUD_FONT_SIZE: Final[int] = 18
-HUD_PANEL_COLOR: Final[tuple[int, int, int]] = (18, 20, 24)
-HUD_TEXT_COLOR: Final[tuple[int, int, int]] = (225, 225, 215)
-HUD_BAR_BACKGROUND: Final[tuple[int, int, int]] = (52, 54, 58)
-HEALTH_BAR_COLOR: Final[tuple[int, int, int]] = (190, 58, 58)
-HUNGER_BAR_COLOR: Final[tuple[int, int, int]] = (200, 142, 54)
-THIRST_BAR_COLOR: Final[tuple[int, int, int]] = (62, 142, 205)
-INFECTION_BAR_COLOR: Final[tuple[int, int, int]] = (132, 184, 64)
-BATTERY_BAR_COLOR: Final[tuple[int, int, int]] = (222, 200, 68)
+HUD_PANEL_COLOR: Final[tuple[int, int, int]] = (18, 21, 26)
+HUD_PANEL_ALPHA: Final[int] = 218
+HUD_BORDER_COLOR: Final[tuple[int, int, int]] = (92, 110, 96)
+HUD_TEXT_COLOR: Final[tuple[int, int, int]] = (232, 232, 222)
+HUD_BAR_BACKGROUND: Final[tuple[int, int, int]] = (52, 56, 62)
+HEALTH_BAR_COLOR: Final[tuple[int, int, int]] = (212, 72, 72)
+HUNGER_BAR_COLOR: Final[tuple[int, int, int]] = (218, 154, 62)
+THIRST_BAR_COLOR: Final[tuple[int, int, int]] = (72, 156, 222)
+INFECTION_BAR_COLOR: Final[tuple[int, int, int]] = (152, 202, 76)
+BATTERY_BAR_COLOR: Final[tuple[int, int, int]] = (236, 212, 82)
+HUD_ICON_RADIUS: Final[int] = 4
 
 # Chat / radio.
-CHAT_HEIGHT: Final[int] = 200
+CHAT_HEIGHT: Final[int] = 180
 CHAT_MARGIN: Final[int] = 14
 CHAT_FONT_SIZE: Final[int] = 18
 CHAT_MAX_INPUT: Final[int] = 180
@@ -169,11 +188,20 @@ CHAT_TYPEWRITER_CPS: Final[float] = 70.0
 CHAT_MAX_ENTRIES: Final[int] = 60
 RADIO_COST_MIN: Final[int] = 1
 RADIO_COST_MAX: Final[int] = 3
-CHAT_BACKGROUND: Final[tuple[int, int, int]] = (14, 16, 19)
-CHAT_OPERATOR_COLOR: Final[tuple[int, int, int]] = (126, 190, 245)
-CHAT_MIKE_COLOR: Final[tuple[int, int, int]] = (214, 222, 184)
-CHAT_SYSTEM_COLOR: Final[tuple[int, int, int]] = (156, 158, 160)
-CHAT_INPUT_COLOR: Final[tuple[int, int, int]] = (240, 240, 230)
+CHAT_BACKGROUND: Final[tuple[int, int, int]] = (14, 17, 21)
+CHAT_PANEL_ALPHA: Final[int] = 236
+CHAT_BORDER_COLOR: Final[tuple[int, int, int]] = (58, 76, 68)
+CHAT_OPERATOR_COLOR: Final[tuple[int, int, int]] = (128, 194, 250)
+CHAT_MIKE_COLOR: Final[tuple[int, int, int]] = (218, 226, 188)
+CHAT_SYSTEM_COLOR: Final[tuple[int, int, int]] = (160, 164, 166)
+CHAT_INPUT_COLOR: Final[tuple[int, int, int]] = (244, 244, 234)
+CHAT_INPUT_BACKGROUND: Final[tuple[int, int, int]] = (30, 35, 41)
+CHAT_HEADER_COLOR: Final[tuple[int, int, int]] = (120, 200, 148)
+
+# Game over.
+GAME_OVER_OVERLAY: Final[tuple[int, int, int, int]] = (0, 0, 0, 150)
+GAME_OVER_COLOR: Final[tuple[int, int, int]] = (224, 88, 78)
+GAME_OVER_TEXT: Final[tuple[int, int, int]] = (224, 224, 214)
 
 # Zombis y combate.
 ZOMBIE_WALKER: Final[str] = "walker"
@@ -225,7 +253,8 @@ EVENT_RADIO_BONUS: Final[int] = 12
 EVENT_INFECTION_BUMP: Final[int] = 5
 
 # Assets procedurales.
-SPRITE_SIZE: Final[int] = 16
+SPRITE_SIZE: Final[int] = 24
+SPRITE_CACHE_VERSION: Final[str] = "v2"
 SPRITE_MIKE: Final[str] = "mike"
 SPRITE_MIKE_HURT: Final[str] = "mike_hurt"
 SPRITE_ZOMBIE_PREFIX: Final[str] = "zombie_"

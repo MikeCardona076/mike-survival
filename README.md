@@ -14,6 +14,8 @@ de DeepSeek (`deepseek-flash`) con function calling.
 - HUD, chat de radio con typewriter y agente DeepSeek con 10 tools;
 - 4 subtipos de zombi, combate, eventos narrativos y game over;
 - sprites procedurales cacheados y SFX generados con pyfxr;
+- terreno con variación de color, árboles, rocas y detalles procedurales;
+- HUD translúcido, chat redondeado y sprites de 24 px con sombras;
 - Docker, compose y Makefile;
 - meta-progresión: memorias entre runs y rasgo veterano tras 10 muertes.
 

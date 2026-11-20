@@ -5,10 +5,10 @@ de cada turno y lo actualiza al final de cada fase.
 
 ## ESTADO ACTUAL
 
-- **Fase en curso:** 8
-- **Tarea actual:** Docker, Makefile y distribución
+- **Fase en curso:** 9
+- **Tarea actual:** Persistencia entre runs, meta-progresión y balanceo
 - **Última actualización:** 2026-11-19
-- **Commit de referencia:** f778c2e
+- **Commit de referencia:** c453f49
 
 ## PLAN DE FASE 1 (COMPLETADO)
 
@@ -88,6 +88,14 @@ de cada turno y lo actualiza al final de cada fase.
 4. Actualizar README con instalación nativa y Docker.
 5. Construir la imagen y ejecutar la suite dentro del contenedor.
 
+## PLAN DE FASE 9
+
+1. Añadir rasgos aleatorios por run con modificadores de estado.
+2. Guardar memorias globales al morir y cargarlas en el prompt de Mike.
+3. Implementar meta-progresión: 10 muertes desbloquean un rasgo.
+4. Actualizar `stats` (runs jugadas, muertes) y balancear.
+5. Tests de rasgos, memorias, desbloqueo y dos runs distintas.
+
 ## REGLAS DE ESTE ARCHIVO
 
 1. Antes de empezar una tarea atómica, el agente escribe debajo de
@@ -107,8 +115,8 @@ de cada turno y lo actualiza al final de cada fase.
 - [x] **Fase 5** — Chat bidireccional Operador ↔ Mike ✅
 - [x] **Fase 6** — Zombis, combate y eventos narrativos ✅
 - [x] **Fase 7** — Assets procedurales (sprites, SFX, música) ✅
-- [ ] **Fase 8** — Docker, Makefile y distribución — EN CURSO
-- [ ] **Fase 9** — Persistencia entre runs, meta-progresión y balanceo
+- [x] **Fase 8** — Docker, Makefile y distribución ✅
+- [ ] **Fase 9** — Persistencia entre runs, meta-progresión y balanceo — EN CURSO
 
 ## DETALLE POR FASE
 
@@ -196,4 +204,5 @@ de cada turno y lo actualiza al final de cada fase.
 [F5] Chat bidireccional y typewriter — OK (06915c2)
 [F6] Zombis, combate y eventos — OK (2314ff4)
 [F7] Sprites procedurales y audio — OK (f778c2e)
-[F8] Docker, compose y distribución — INICIO
+[F8] Docker, compose y distribución — OK (c453f49)
+[F9] Rasgos, memoria global y meta-progresión — INICIO

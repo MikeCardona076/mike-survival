@@ -5,10 +5,10 @@ de cada turno y lo actualiza al final de cada fase.
 
 ## ESTADO ACTUAL
 
-- **Fase en curso:** 4
-- **Tarea actual:** Cliente DeepSeek con function calling y 10 herramientas
+- **Fase en curso:** 5
+- **Tarea actual:** Chat bidireccional Operador ↔ Mike
 - **Última actualización:** 2026-11-19
-- **Commit de referencia:** 338207e
+- **Commit de referencia:** a6f2c70
 
 ## PLAN DE FASE 1 (COMPLETADO)
 
@@ -57,6 +57,13 @@ de cada turno y lo actualiza al final de cada fase.
 4. Escribir el system prompt de Mike con su historia y reglas de tools.
 5. Tests con cliente falso: tool call → ejecución → respuesta final.
 
+## PLAN DE FASE 5
+
+1. Implementar `ui/chat.py`: historial, entrada de texto y typewriter.
+2. Integrar el chat en `main.py` con envío a DeepSeek y coste de radio.
+3. Mostrar errores de enlace y muerte de Mike en el chat.
+4. Tests headless del panel y del flujo de entrada.
+
 ## REGLAS DE ESTE ARCHIVO
 
 1. Antes de empezar una tarea atómica, el agente escribe debajo de
@@ -72,8 +79,8 @@ de cada turno y lo actualiza al final de cada fase.
 - [x] **Fase 1** — Esqueleto, BD y repositorios SQLite ✅
 - [x] **Fase 2** — Mundo procedural con chunks y Perlin noise ✅
 - [x] **Fase 3** — Mike, HUD y actualización de estado ✅
-- [ ] **Fase 4** — Cliente DeepSeek (`deepseek-flash`) con function calling — EN CURSO
-- [ ] **Fase 5** — Chat bidireccional Operador ↔ Mike
+- [x] **Fase 4** — Cliente DeepSeek (`deepseek-flash`) con function calling ✅
+- [ ] **Fase 5** — Chat bidireccional Operador ↔ Mike — EN CURSO
 - [ ] **Fase 6** — Zombis, combate y eventos narrativos
 - [ ] **Fase 7** — Assets procedurales (sprites + SFX + música)
 - [ ] **Fase 8** — Docker, Makefile y distribución
@@ -161,4 +168,5 @@ de cada turno y lo actualiza al final de cada fase.
 [F2] Renderer con viewport culling y ventana pygame — OK (faf6980)
 [F2] Verificación Docker: 28 tests, ruff, black y smoke de ventana — OK (faf6980)
 [F3] Mike, inventario, turnos y HUD — OK (338207e)
-[F4] Cliente DeepSeek con function calling y 10 tools — INICIO
+[F4] Cliente DeepSeek con function calling y 10 tools — OK (a6f2c70)
+[F5] Chat bidireccional y typewriter — INICIO

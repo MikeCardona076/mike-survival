@@ -5,10 +5,10 @@ de cada turno y lo actualiza al final de cada fase.
 
 ## ESTADO ACTUAL
 
-- **Fase en curso:** 7
-- **Tarea actual:** Sprites procedurales y audio
+- **Fase en curso:** 8
+- **Tarea actual:** Docker, Makefile y distribución
 - **Última actualización:** 2026-11-19
-- **Commit de referencia:** 2314ff4
+- **Commit de referencia:** f778c2e
 
 ## PLAN DE FASE 1 (COMPLETADO)
 
@@ -80,6 +80,14 @@ de cada turno y lo actualiza al final de cada fase.
 4. Añadir `AssetCacheRepository` y tests de sprites/audio.
 5. Música adaptativa: se omite si no hay BloodMusic, como permite el brief.
 
+## PLAN DE FASE 8
+
+1. Escribir `Dockerfile` con Python 3.12 y librerías SDL.
+2. Escribir `docker-compose.yml` con X11, volumen de datos y env.
+3. Añadir `.dockerignore` y targets Docker al `Makefile`.
+4. Actualizar README con instalación nativa y Docker.
+5. Construir la imagen y ejecutar la suite dentro del contenedor.
+
 ## REGLAS DE ESTE ARCHIVO
 
 1. Antes de empezar una tarea atómica, el agente escribe debajo de
@@ -98,8 +106,8 @@ de cada turno y lo actualiza al final de cada fase.
 - [x] **Fase 4** — Cliente DeepSeek (`deepseek-flash`) con function calling ✅
 - [x] **Fase 5** — Chat bidireccional Operador ↔ Mike ✅
 - [x] **Fase 6** — Zombis, combate y eventos narrativos ✅
-- [ ] **Fase 7** — Assets procedurales (sprites + SFX + música) — EN CURSO
-- [ ] **Fase 8** — Docker, Makefile y distribución
+- [x] **Fase 7** — Assets procedurales (sprites, SFX, música) ✅
+- [ ] **Fase 8** — Docker, Makefile y distribución — EN CURSO
 - [ ] **Fase 9** — Persistencia entre runs, meta-progresión y balanceo
 
 ## DETALLE POR FASE
@@ -187,4 +195,5 @@ de cada turno y lo actualiza al final de cada fase.
 [F4] Cliente DeepSeek con function calling y 10 tools — OK (a6f2c70)
 [F5] Chat bidireccional y typewriter — OK (06915c2)
 [F6] Zombis, combate y eventos — OK (2314ff4)
-[F7] Sprites procedurales y audio — INICIO
+[F7] Sprites procedurales y audio — OK (f778c2e)
+[F8] Docker, compose y distribución — INICIO

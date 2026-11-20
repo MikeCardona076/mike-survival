@@ -1,0 +1,24 @@
+# Entornos y cachés
+.venv/
+.uv-cache/
+.uv-python/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest_tmp/
+.test_tmp/
+pytest-cache-files-*/
+.ruff_cache/
+.mypy_cache/
+
+# Datos y secretos
+data/*
+!data/.gitkeep
+.env
+*.db
+*.db-wal
+*.db-shm
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

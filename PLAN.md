@@ -5,12 +5,12 @@ de cada turno y lo actualiza al final de cada fase.
 
 ## ESTADO ACTUAL
 
-- **Fase en curso:** 1 (pendiente de aprobación del Operador)
-- **Tarea actual:** Inicializar estructura del repo y base de datos
+- **Fase en curso:** 2 (pendiente de aprobación del Operador)
+- **Tarea actual:** Fase 1 cerrada; esperando aprobación para iniciar Fase 2
 - **Última actualización:** 2026-11-19
-- **Commit de referencia:** (pendiente — repo aún sin inicializar)
+- **Commit de referencia:** d340dc4
 
-## PLAN DE FASE 1
+## PLAN DE FASE 1 (COMPLETADO)
 
 1. Crear el esqueleto de `mike-survival/` y el tooling: `pyproject.toml`,
    `requirements.txt`, `.gitignore`, `.env.example` y `Makefile`.
@@ -36,7 +36,7 @@ de cada turno y lo actualiza al final de cada fase.
 
 ## ROADMAP DE FASES
 
-- [ ] **Fase 1** — Esqueleto, BD y repositorios SQLite
+- [x] **Fase 1** — Esqueleto, BD y repositorios SQLite ✅
 - [ ] **Fase 2** — Mundo procedural con chunks y Perlin noise
 - [ ] **Fase 3** — Mike, HUD y actualización de estado
 - [ ] **Fase 4** — Cliente DeepSeek (`deepseek-flash`) con function calling
@@ -120,4 +120,7 @@ de cada turno y lo actualiza al final de cada fase.
 
 ## REGISTRO DE TAREAS
 
-(El agente escribe aquí sus entradas turno a turno.)
+[F1] Scaffold, tooling y estructura de paquetes — OK (04258e6)
+[F1] Esquema SQLite, conexión WAL/FK y repositorios — OK (e196d03)
+[F1] Run inicial, Refugio 7 determinista y tests — OK (d340dc4)
+[F1] Verificación final: 15 tests, ruff, black y `main.py` — OK (d340dc4)

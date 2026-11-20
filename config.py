@@ -157,3 +157,19 @@ HUNGER_BAR_COLOR: Final[tuple[int, int, int]] = (200, 142, 54)
 THIRST_BAR_COLOR: Final[tuple[int, int, int]] = (62, 142, 205)
 INFECTION_BAR_COLOR: Final[tuple[int, int, int]] = (132, 184, 64)
 BATTERY_BAR_COLOR: Final[tuple[int, int, int]] = (222, 200, 68)
+
+# Chat / radio.
+CHAT_HEIGHT: Final[int] = 200
+CHAT_MARGIN: Final[int] = 14
+CHAT_FONT_SIZE: Final[int] = 18
+CHAT_MAX_INPUT: Final[int] = 180
+CHAT_VISIBLE_MESSAGES: Final[int] = 6
+CHAT_TYPEWRITER_CPS: Final[float] = 70.0
+CHAT_MAX_ENTRIES: Final[int] = 60
+RADIO_COST_MIN: Final[int] = 1
+RADIO_COST_MAX: Final[int] = 3
+CHAT_BACKGROUND: Final[tuple[int, int, int]] = (14, 16, 19)
+CHAT_OPERATOR_COLOR: Final[tuple[int, int, int]] = (126, 190, 245)
+CHAT_MIKE_COLOR: Final[tuple[int, int, int]] = (214, 222, 184)
+CHAT_SYSTEM_COLOR: Final[tuple[int, int, int]] = (156, 158, 160)
+CHAT_INPUT_COLOR: Final[tuple[int, int, int]] = (240, 240, 230)

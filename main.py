@@ -126,6 +126,12 @@ def run_game(
 
             chat.update(delta_seconds)
             renderer.draw(session.world, session.camera_x, session.camera_y)
+            renderer.draw_entities(
+                session.camera_x,
+                session.camera_y,
+                session.mike,
+                session.zombies,
+            )
             hud.draw(session.mike)
             chat.draw()
             pygame.display.flip()

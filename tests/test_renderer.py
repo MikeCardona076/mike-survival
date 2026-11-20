@@ -21,6 +21,7 @@ from config import (  # noqa: E402
     WINDOW_HEIGHT,
     WINDOW_WIDTH,
 )
+from game.entities import Mike, Zombie  # noqa: E402
 from game.renderer import Renderer  # noqa: E402
 
 
@@ -95,3 +96,11 @@ def test_draw_culls_before_requesting_chunks(screen: pygame.Surface) -> None:
 
     assert world.requested
     assert all(8 <= chunk_x <= 12 for chunk_x, _ in world.requested)
+
+
+def test_draw_entities(screen: pygame.Surface) -> None:
+    renderer = Renderer(screen)
+    mike = Mike()
+    zombie = Zombie.create("walker", 17, 16)
+
+    renderer.draw_entities(CAMERA_START_X, CAMERA_START_Y, mike, [zombie])

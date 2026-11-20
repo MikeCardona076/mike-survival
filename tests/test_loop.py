@@ -13,6 +13,7 @@ from db.repositories import (  # noqa: E402
     AgentStateRepository,
     RunRepository,
 )
+from game.entities import Zombie  # noqa: E402
 from game.loop import GameSession  # noqa: E402
 
 
@@ -41,3 +42,28 @@ def test_session_death_finishes_run(connection: sqlite3.Connection) -> None:
     assert finished is not None
     assert finished.status == RUN_STATUS_DEAD
     assert finished.cause_of_death is not None
+
+
+def test_session_spawns_zombies(connection: sqlite3.Connection) -> None:
+    run = RunRepository(connection).create(seed=3030, refugio7_x=0, refugio7_y=0)
+    session = GameSession(run, connection)
+
+    assert session.zombies
+    for zombie in session.zombies:
+        assert zombie.alive
+        assert (zombie.x, zombie.y) != (int(session.mike.pos_x), int(session.mike.pos_y))
+
+
+def test_session_combat_kills_adjacent_zombie(connection: sqlite3.Connection) -> None:
+    run = RunRepository(connection).create(seed=4040, refugio7_x=0, refugio7_y=0)
+    session = GameSession(run, connection)
+    session.zombies = [
+        Zombie.create("walker", int(session.mike.pos_x) + 1, int(session.mike.pos_y))
+    ]
+
+    first = session.attack_nearest_zombie()
+    assert "golpea" in first
+    second = session.attack_nearest_zombie()
+
+    assert "derriba" in second
+    assert session.zombies == []

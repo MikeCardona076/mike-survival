@@ -173,3 +173,52 @@ CHAT_OPERATOR_COLOR: Final[tuple[int, int, int]] = (126, 190, 245)
 CHAT_MIKE_COLOR: Final[tuple[int, int, int]] = (214, 222, 184)
 CHAT_SYSTEM_COLOR: Final[tuple[int, int, int]] = (156, 158, 160)
 CHAT_INPUT_COLOR: Final[tuple[int, int, int]] = (240, 240, 230)
+
+# Zombis y combate.
+ZOMBIE_WALKER: Final[str] = "walker"
+ZOMBIE_RUNNER: Final[str] = "runner"
+ZOMBIE_BRUTE: Final[str] = "brute"
+ZOMBIE_SCREECHER: Final[str] = "screecher"
+ZOMBIE_KINDS: Final[tuple[str, ...]] = (
+    ZOMBIE_WALKER,
+    ZOMBIE_RUNNER,
+    ZOMBIE_BRUTE,
+    ZOMBIE_SCREECHER,
+)
+ZOMBIE_STATS: Final[dict[str, dict[str, int]]] = {
+    ZOMBIE_WALKER: {"health": 30, "damage": 5, "speed": 1, "chase_range": 5},
+    ZOMBIE_RUNNER: {"health": 20, "damage": 4, "speed": 2, "chase_range": 8},
+    ZOMBIE_BRUTE: {"health": 60, "damage": 12, "speed": 1, "chase_range": 4},
+    ZOMBIE_SCREECHER: {"health": 25, "damage": 3, "speed": 1, "chase_range": 7},
+}
+ZOMBIE_ATTACK_COOLDOWN: Final[int] = 2
+INITIAL_ZOMBIES: Final[int] = 2
+MAX_ZOMBIES: Final[int] = 8
+ZOMBIE_SPAWN_CHANCE: Final[float] = 0.22
+ZOMBIE_SPAWN_RADIUS: Final[int] = 6
+MIKE_MELEE_DAMAGE: Final[int] = 22
+MIKE_COLOR: Final[tuple[int, int, int]] = (228, 228, 214)
+ZOMBIE_COLORS: Final[dict[str, tuple[int, int, int]]] = {
+    ZOMBIE_WALKER: (110, 160, 90),
+    ZOMBIE_RUNNER: (190, 124, 62),
+    ZOMBIE_BRUTE: (132, 70, 70),
+    ZOMBIE_SCREECHER: (152, 102, 180),
+}
+
+# Eventos narrativos.
+EVENT_CHANCE: Final[float] = 0.18
+EVENT_LOOT: Final[str] = "loot"
+EVENT_AMBUSH: Final[str] = "ambush"
+EVENT_STORM: Final[str] = "storm"
+EVENT_RADIO: Final[str] = "radio"
+EVENT_WHISPER: Final[str] = "whisper"
+EVENT_TYPES: Final[tuple[str, ...]] = (
+    EVENT_LOOT,
+    EVENT_AMBUSH,
+    EVENT_STORM,
+    EVENT_RADIO,
+    EVENT_WHISPER,
+)
+EVENT_STORM_DAMAGE: Final[int] = 4
+EVENT_RADIO_BONUS: Final[int] = 12
+EVENT_INFECTION_BUMP: Final[int] = 5

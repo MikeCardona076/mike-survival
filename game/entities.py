@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from config import (
     BANDAGE_HEAL,
@@ -22,14 +24,23 @@ from config import (
     MAX_INFECTION,
     MAX_RADIO_BATTERY,
     MAX_THIRST,
+    MIKE_MELEE_DAMAGE,
     STARTING_HEALTH,
     STARVATION_DAMAGE,
     SUPPRESSOR_RELIEF,
     THIRST_CRITICAL,
     THIRST_PER_TURN,
+    WALKABLE_TILE_IDS,
     WATER_THIRST_RELIEF,
+    ZOMBIE_ATTACK_COOLDOWN,
+    ZOMBIE_KINDS,
+    ZOMBIE_SPAWN_RADIUS,
+    ZOMBIE_STATS,
 )
 from game.inventory import Inventory
+
+if TYPE_CHECKING:
+    from game.world import World
 
 
 @dataclass
@@ -47,6 +58,7 @@ class Mike:
     turn_count: int = 0
     alive: bool = True
     cause_of_death: str | None = None
+    melee_damage: int = MIKE_MELEE_DAMAGE
 
     def advance_turn(self) -> list[str]:
         """Avanza un turno de simulación y devuelve los eventos relevantes."""
@@ -127,3 +139,109 @@ class Mike:
             return False
         self.radio_battery -= amount
         return True
+
+
+@dataclass
+class Zombie:
+    """Zombi con IA simple: idle, persecución y ataque."""
+
+    kind: str
+    x: int
+    y: int
+    health: int
+    max_health: int
+    damage: int
+    speed: int
+    chase_range: int
+    state: str = "idle"
+    cooldown: int = 0
+    alive: bool = True
+
+    @classmethod
+    def create(cls, kind: str, x: int, y: int) -> Zombie:
+        """Crea un zombi con las estadísticas de su subtipo."""
+        stats = ZOMBIE_STATS[kind]
+        return cls(
+            kind=kind,
+            x=x,
+            y=y,
+            health=stats["health"],
+            max_health=stats["health"],
+            damage=stats["damage"],
+            speed=stats["speed"],
+            chase_range=stats["chase_range"],
+        )
+
+    def distance_to(self, mike: Mike) -> int:
+        """Distancia Chebyshev en tiles."""
+        return max(abs(self.x - int(mike.pos_x)), abs(self.y - int(mike.pos_y)))
+
+    def take_damage(self, amount: int) -> bool:
+        """Aplica daño; devuelve True si el zombi muere."""
+        if amount < 0:
+            raise ValueError("El daño no puede ser negativo")
+        self.health = max(0, self.health - amount)
+        if self.health == 0:
+            self.alive = False
+            return True
+        return False
+
+    def update(self, mike: Mike) -> list[str]:
+        """Un turno de IA. Devuelve eventos de ataque."""
+        if not self.alive or not mike.alive:
+            return []
+        if self.cooldown > 0:
+            self.cooldown -= 1
+
+        distance = self.distance_to(mike)
+        if distance <= 1:
+            self.state = "attack"
+            if self.cooldown == 0:
+                mike.take_damage(self.damage, cause=f"zombi {self.kind}")
+                self.cooldown = ZOMBIE_ATTACK_COOLDOWN
+                return [f"Un {self.kind} ataca a Mike ({self.damage} de daño)."]
+            return []
+
+        if distance <= self.chase_range:
+            self.state = "chase"
+            self._step_toward(mike)
+        else:
+            self.state = "idle"
+        return []
+
+    def _step_toward(self, mike: Mike) -> None:
+        delta_x = int(mike.pos_x) - self.x
+        delta_y = int(mike.pos_y) - self.y
+        step_x = 0 if delta_x == 0 else (1 if delta_x > 0 else -1)
+        step_y = 0 if delta_y == 0 else (1 if delta_y > 0 else -1)
+        for _ in range(self.speed):
+            if step_x:
+                self.x += step_x
+            if step_y:
+                self.y += step_y
+
+
+def spawn_zombies(
+    seed: int,
+    count: int,
+    center_x: int,
+    center_y: int,
+    world: World,
+) -> list[Zombie]:
+    """Genera zombis deterministas en tiles transitables alrededor de un punto."""
+    rng = random.Random(seed)
+    zombies: list[Zombie] = []
+    occupied: set[tuple[int, int]] = set()
+    for _ in range(count):
+        for _attempt in range(30):
+            kind = rng.choice(ZOMBIE_KINDS)
+            x = center_x + rng.randint(-ZOMBIE_SPAWN_RADIUS, ZOMBIE_SPAWN_RADIUS)
+            y = center_y + rng.randint(-ZOMBIE_SPAWN_RADIUS, ZOMBIE_SPAWN_RADIUS)
+            if (x, y) == (center_x, center_y) or (x, y) in occupied:
+                continue
+            if int(world.get_tile(x, y)) not in WALKABLE_TILE_IDS:
+                continue
+            zombies.append(Zombie.create(kind, x, y))
+            occupied.add((x, y))
+            break
+    return zombies

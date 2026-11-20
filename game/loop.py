@@ -2,19 +2,30 @@
 
 from __future__ import annotations
 
+import random
 import sqlite3
 
-from config import RUN_STATUS_DEAD, TILE_SIZE, TURN_SECONDS
+from config import (
+    INITIAL_ZOMBIES,
+    MAX_ZOMBIES,
+    RUN_STATUS_DEAD,
+    TILE_SIZE,
+    TURN_SECONDS,
+    ZOMBIE_SPAWN_CHANCE,
+)
 from db.repositories import (
     AgentStateRepository,
     ChatMessage,
     ChatRepository,
+    EventRepository,
     MemoryEntry,
     MemoryRepository,
     Run,
     RunRepository,
 )
-from game.entities import Mike
+from game.combat import attack_zombie
+from game.entities import Mike, Zombie, spawn_zombies
+from game.events import maybe_event
 from game.world import World
 
 
@@ -37,9 +48,17 @@ class GameSession:
         self._run_repository = RunRepository(connection)
         self._chat_repository = ChatRepository(connection)
         self._memory_repository = MemoryRepository(connection)
+        self._event_repository = EventRepository(connection)
         self._finished = False
         if self._state_repository.get(run.id) is None:
             self._state_repository.create(run.id)
+        self.zombies: list[Zombie] = spawn_zombies(
+            run.seed,
+            INITIAL_ZOMBIES,
+            int(self.mike.pos_x),
+            int(self.mike.pos_y),
+            self.world,
+        )
         self.persist()
 
     def record_chat(
@@ -97,12 +116,59 @@ class GameSession:
             self.advance_turn()
 
     def advance_turn(self) -> None:
-        """Ejecuta un turno de simulación y guarda el estado."""
+        """Ejecuta un turno: desgaste, zombis y eventos; guarda el estado."""
         events = self.mike.advance_turn()
+        events.extend(self._update_zombies())
+        if self.mike.alive:
+            rolled = maybe_event(self)
+            if rolled is not None:
+                event_type, text = rolled
+                self._event_repository.add(self.run.id, event_type, text)
+                events.append(text)
         self.events.extend(events)
         self.persist()
         if self.is_over:
             self._finish_run()
+
+    def _update_zombies(self) -> list[str]:
+        events: list[str] = []
+        for zombie in self.zombies:
+            events.extend(zombie.update(self.mike))
+            if not self.mike.alive:
+                return events
+
+        alive_count = sum(1 for zombie in self.zombies if zombie.alive)
+        rng = random.Random((self.run.seed << 7) ^ (self.mike.turn_count * 131))
+        if rng.random() < ZOMBIE_SPAWN_CHANCE and alive_count < MAX_ZOMBIES:
+            new_zombies = spawn_zombies(
+                self.run.seed + self.mike.turn_count * 17,
+                1,
+                int(self.mike.pos_x),
+                int(self.mike.pos_y),
+                self.world,
+            )
+            if new_zombies:
+                self.zombies.extend(new_zombies)
+                events.append("Se oyen pasos: otro zombi se acerca.")
+        return events
+
+    def attack_nearest_zombie(self) -> str:
+        """Ataca al zombi adyacente más cercano y devuelve el resultado."""
+        if not self.mike.alive:
+            return "Mike ya no puede luchar."
+        alive = [zombie for zombie in self.zombies if zombie.alive]
+        if not alive:
+            return "No hay ningún zombi al alcance."
+        nearest = min(alive, key=lambda zombie: zombie.distance_to(self.mike))
+        if nearest.distance_to(self.mike) > 1:
+            return "El zombi más cercano está demasiado lejos; acércate."
+        message, killed = attack_zombie(self.mike, nearest)
+        if killed:
+            self.zombies.remove(nearest)
+            self._event_repository.add(self.run.id, "combat", message)
+        self.events.append(message)
+        self.persist()
+        return message
 
     def persist(self) -> None:
         """Guarda el estado de Mike en ``agent_state``."""

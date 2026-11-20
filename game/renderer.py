@@ -11,9 +11,17 @@ from typing import TYPE_CHECKING
 
 import pygame
 
-from config import CHUNK_PIXELS, COLOR_BACKGROUND, TILE_COLORS, TILE_SIZE
+from config import (
+    CHUNK_PIXELS,
+    COLOR_BACKGROUND,
+    MIKE_COLOR,
+    TILE_COLORS,
+    TILE_SIZE,
+    ZOMBIE_COLORS,
+)
 
 if TYPE_CHECKING:
+    from game.entities import Mike, Zombie
     from game.world import World
 
 
@@ -69,3 +77,36 @@ class Renderer:
                     drawn_tiles += 1
 
         return drawn_tiles
+
+    def draw_entities(
+        self,
+        camera_x: float,
+        camera_y: float,
+        mike: Mike,
+        zombies: list[Zombie],
+    ) -> None:
+        """Dibuja a Mike y a los zombis visibles encima del terreno."""
+        left, top = self._viewport_origin(camera_x, camera_y)
+        viewport = self._screen.get_rect()
+        size = TILE_SIZE - 4
+
+        for zombie in zombies:
+            if not zombie.alive:
+                continue
+            rect = pygame.Rect(
+                int(zombie.x * TILE_SIZE - left) + 2,
+                int(zombie.y * TILE_SIZE - top) + 2,
+                size,
+                size,
+            )
+            if viewport.colliderect(rect):
+                pygame.draw.rect(self._screen, ZOMBIE_COLORS[zombie.kind], rect)
+
+        mike_rect = pygame.Rect(
+            int(mike.pos_x * TILE_SIZE - left) + 2,
+            int(mike.pos_y * TILE_SIZE - top) + 2,
+            size,
+            size,
+        )
+        if viewport.colliderect(mike_rect):
+            pygame.draw.rect(self._screen, MIKE_COLOR, mike_rect)

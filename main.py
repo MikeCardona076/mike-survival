@@ -1,8 +1,7 @@
 """Punto de entrada de MIKE: SEÑAL DE SUPERVIVENCIA.
 
-Crea una run nueva y abre la ventana del mundo procedural. El control del
-personaje llegará en fases posteriores; aquí solo se renderiza el terreno
-alrededor del chunk (0, 0).
+Crea una run nueva y abre la ventana del mundo procedural con el HUD de
+Mike. El control del personaje llegará en fases posteriores.
 """
 
 from __future__ import annotations
@@ -14,10 +13,9 @@ import sqlite3
 import pygame
 
 from config import (
-    CAMERA_START_X,
-    CAMERA_START_Y,
     DEFAULT_TRAIT,
     FPS,
+    MAX_FRAME_DELTA,
     SEED_BITS,
     WINDOW_HEIGHT,
     WINDOW_TITLE,
@@ -25,8 +23,10 @@ from config import (
 )
 from db.database import get_connection, init_db
 from db.repositories import AgentStateRepository, Run, RunRepository
+from game.loop import GameSession
 from game.renderer import Renderer
-from game.world import World, generate_refugio7
+from game.world import generate_refugio7
+from ui.hud import Hud
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +58,9 @@ def run_game(
         screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption(WINDOW_TITLE)
         clock = pygame.time.Clock()
-        world = World(run.id, run.seed, connection)
+        session = GameSession(run, connection)
         renderer = Renderer(screen)
+        hud = Hud(screen)
 
         frames = 0
         running = True
@@ -70,9 +71,11 @@ def run_game(
                 ):
                     running = False
 
-            renderer.draw(world, CAMERA_START_X, CAMERA_START_Y)
+            delta_seconds = min(clock.tick(FPS) / 1000.0, MAX_FRAME_DELTA)
+            session.update(delta_seconds)
+            renderer.draw(session.world, session.camera_x, session.camera_y)
+            hud.draw(session.mike)
             pygame.display.flip()
-            clock.tick(FPS)
 
             frames += 1
             if max_frames is not None and frames >= max_frames:

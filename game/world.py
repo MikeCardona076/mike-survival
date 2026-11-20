@@ -15,7 +15,10 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any
 
-from noise import pnoise2
+try:
+    from noise import pnoise2
+except ImportError:  # Windows sin compilador C: fallback puro
+    from game.perlin import pnoise2
 
 from config import (
     CHUNK_SIZE,

@@ -24,9 +24,24 @@ persisten en `stats` y la meta-progresión en `meta_progression`.
 
 ## Cómo jugar
 
+### Windows: un solo comando
+
+Haz doble clic en `run_windows.cmd` o ejecuta:
+
+```bat
+run_windows.cmd
+```
+
+El script comprueba Python 3.12, crea `.venv`, instala dependencias y
+arranca el juego. Solo necesitas Python 3.12 instalado; si no lo tienes:
+`winget install -e --id Python.Python.3.12`. En Windows se usa un Perlin
+puro incluido en el repo porque el paquete `noise` requiere compilador C.
+
+### Linux / macOS
+
 ```bash
 python3.12 -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env             # rellena DEEPSEEK_API_KEY
 python main.py

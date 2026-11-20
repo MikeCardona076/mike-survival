@@ -8,10 +8,6 @@ import sqlite3
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
 
-import pytest  # noqa: E402
-
-pytest.importorskip("noise")
-
 import main  # noqa: E402
 from db.repositories import RunRepository  # noqa: E402
 

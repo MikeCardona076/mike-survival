@@ -6,10 +6,6 @@ import sqlite3
 
 import pytest
 
-# ``noise`` necesita compilador en Windows; en local puede no estar
-# instalado. En Docker (entorno de verificación) siempre está presente.
-pytest.importorskip("noise")
-
 from config import CHUNK_SIZE, REFUGIO7_RADIUS  # noqa: E402
 from db.repositories import RunRepository, WorldChunkRepository  # noqa: E402
 from game.world import (  # noqa: E402

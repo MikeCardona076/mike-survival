@@ -4,10 +4,6 @@ from __future__ import annotations
 
 import sqlite3
 
-import pytest
-
-pytest.importorskip("noise")
-
 from config import (
     META_UNLOCK_VETERAN,
     RUN_STATUS_DEAD,

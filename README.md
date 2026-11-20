@@ -5,6 +5,19 @@ jugador **no** controla a Mike: es el Operador, que lo coordina por radio
 con batería limitada. Mike es un agente autónomo que corre sobre la API
 de DeepSeek (`deepseek-flash`) con function calling.
 
+📖 **[Guía de usuario completa](docs/GUIA_USUARIO.md)** — historia,
+controles, HUD, estrategia, configuración y solución de problemas.
+
+![Partida de MIKE](docs/images/gameplay.png)
+
+## Capturas
+
+| Mundo y HUD | Sprites |
+| --- | --- |
+| ![Gameplay](docs/images/gameplay.png) | ![Sprites](docs/images/sprites.png) |
+
+![Game over](docs/images/game_over.png)
+
 ## Estado
 
 **Proyecto completo — 9/9 fases.**
@@ -86,7 +99,7 @@ make docker-test   # tests dentro del contenedor
 
 `db/` persistencia SQLite, `game/` simulación, `agent/` cliente DeepSeek y
 herramientas, `ui/` HUD y chat, `assets/` sprites y audio procedural,
-`tests/` suite de pytest.
+`docs/` guía de usuario y capturas, `tests/` suite de pytest.
 
 ## Hoja de ruta
 

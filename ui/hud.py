@@ -16,13 +16,14 @@ from config import (
     HUD_ICON_RADIUS,
     HUD_LABEL_WIDTH,
     HUD_MARGIN,
+    HUD_OBJECTIVE_COLOR,
     HUD_PANEL_ALPHA,
     HUD_PANEL_COLOR,
     HUD_ROW_HEIGHT,
     HUD_TEXT_COLOR,
     HUNGER_BAR_COLOR,
     INFECTION_BAR_COLOR,
-    MAX_HEALTH,
+    ITEM_COIN,
     MAX_HUNGER,
     MAX_INFECTION,
     MAX_RADIO_BATTERY,
@@ -52,10 +53,10 @@ class Hud:
         self._screen.blit(shadow, (position[0] + 1, position[1] + 1))
         self._screen.blit(self._font.render(text, True, color), position)
 
-    def draw(self, mike: Mike, trait: str = "") -> None:
-        """Pinta salud, hambre, sed, infección, batería, turno y rasgo."""
+    def draw(self, mike: Mike, trait: str = "", objective: str = "") -> None:
+        """Pinta salud, hambre, sed, infección, batería, turno, rasgo y objetivo."""
         bars = (
-            ("SALUD", mike.health, MAX_HEALTH, HEALTH_BAR_COLOR),
+            ("SALUD", mike.health, mike.max_health, HEALTH_BAR_COLOR),
             ("HAMBRE", mike.hunger, MAX_HUNGER, HUNGER_BAR_COLOR),
             ("SED", mike.thirst, MAX_THIRST, THIRST_BAR_COLOR),
             ("INFECCIÓN", mike.infection, MAX_INFECTION, INFECTION_BAR_COLOR),
@@ -113,4 +114,11 @@ class Hud:
         footer = f"TURNO {mike.turn_count}"
         if trait:
             footer += f" · {trait.upper()}"
+        footer += f" · {mike.inventory.count(ITEM_COIN)} MONEDAS"
         self._text(footer, (HUD_MARGIN * 2, y + 3), HUD_TEXT_COLOR)
+        if objective:
+            self._text(
+                f"OBJ: {objective[:26]}",
+                (HUD_MARGIN * 2, y + 21),
+                HUD_OBJECTIVE_COLOR,
+            )

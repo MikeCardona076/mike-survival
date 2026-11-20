@@ -151,6 +151,9 @@ ITEM_WATER: Final[str] = "water"
 ITEM_SUPPRESSOR: Final[str] = "suppressor"
 ITEM_BANDAGE: Final[str] = "bandage"
 ITEM_SCRAP: Final[str] = "scrap"
+ITEM_WOOD: Final[str] = "wood"
+ITEM_IRON: Final[str] = "iron"
+ITEM_COIN: Final[str] = "coin"
 FOOD_HUNGER_RELIEF: Final[int] = 45
 WATER_THIRST_RELIEF: Final[int] = 55
 BANDAGE_HEAL: Final[int] = 25
@@ -167,6 +170,8 @@ SCAVENGE_ITEMS: Final[tuple[str, ...]] = (
     ITEM_SUPPRESSOR,
     ITEM_BANDAGE,
     ITEM_SCRAP,
+    ITEM_WOOD,
+    ITEM_IRON,
 )
 ITEM_NAMES: Final[dict[str, str]] = {
     ITEM_FOOD: "comida",
@@ -174,7 +179,28 @@ ITEM_NAMES: Final[dict[str, str]] = {
     ITEM_SUPPRESSOR: "supresor",
     ITEM_BANDAGE: "venda",
     ITEM_SCRAP: "chatarra",
+    ITEM_WOOD: "madera",
+    ITEM_IRON: "hierro",
+    ITEM_COIN: "monedas",
 }
+
+# Economía, refugio y taller.
+WOOD_PACK: Final[int] = 2
+WOOD_PRICE: Final[int] = 5
+IRON_PACK: Final[int] = 1
+IRON_PRICE: Final[int] = 8
+HEAL_PRICE: Final[int] = 10
+SHELTER_MAX_LEVEL: Final[int] = 3
+SHELTER_WOOD_COST: Final[int] = 6
+SHELTER_IRON_COST: Final[int] = 3
+SHELTER_HEALTH_BONUS: Final[int] = 10
+WEAPON_MAX_LEVEL: Final[int] = 3
+WEAPON_WOOD_COST: Final[int] = 4
+WEAPON_IRON_COST: Final[int] = 4
+WEAPON_DAMAGE_BONUS: Final[int] = 7
+SHELTER_PANEL_WIDTH: Final[int] = 580
+SHELTER_PANEL_HEIGHT: Final[int] = 410
+SHELTER_PANEL_ALPHA: Final[int] = 240
 
 # HUD.
 HUD_MARGIN: Final[int] = 14
@@ -182,12 +208,13 @@ HUD_LABEL_WIDTH: Final[int] = 92
 HUD_BAR_WIDTH: Final[int] = 190
 HUD_BAR_HEIGHT: Final[int] = 14
 HUD_ROW_HEIGHT: Final[int] = 22
-HUD_FOOTER_HEIGHT: Final[int] = 22
+HUD_FOOTER_HEIGHT: Final[int] = 40
 HUD_FONT_SIZE: Final[int] = 18
 HUD_PANEL_COLOR: Final[tuple[int, int, int]] = (18, 21, 26)
 HUD_PANEL_ALPHA: Final[int] = 218
 HUD_BORDER_COLOR: Final[tuple[int, int, int]] = (92, 110, 96)
 HUD_TEXT_COLOR: Final[tuple[int, int, int]] = (232, 232, 222)
+HUD_OBJECTIVE_COLOR: Final[tuple[int, int, int]] = (196, 208, 156)
 HUD_BAR_BACKGROUND: Final[tuple[int, int, int]] = (52, 56, 62)
 HEALTH_BAR_COLOR: Final[tuple[int, int, int]] = (212, 72, 72)
 HUNGER_BAR_COLOR: Final[tuple[int, int, int]] = (218, 154, 62)
@@ -237,6 +264,12 @@ ZOMBIE_STATS: Final[dict[str, dict[str, int]]] = {
     ZOMBIE_RUNNER: {"health": 20, "damage": 4, "speed": 2, "chase_range": 8},
     ZOMBIE_BRUTE: {"health": 60, "damage": 12, "speed": 1, "chase_range": 4},
     ZOMBIE_SCREECHER: {"health": 25, "damage": 3, "speed": 1, "chase_range": 7},
+}
+ZOMBIE_COIN_REWARDS: Final[dict[str, int]] = {
+    ZOMBIE_WALKER: 3,
+    ZOMBIE_RUNNER: 4,
+    ZOMBIE_BRUTE: 8,
+    ZOMBIE_SCREECHER: 3,
 }
 ZOMBIE_ATTACK_COOLDOWN: Final[int] = 2
 INITIAL_ZOMBIES: Final[int] = 2

@@ -31,6 +31,7 @@ controles, HUD, estrategia, configuración y solución de problemas.
 - HUD translúcido, chat redondeado y sprites de 24 px con sombras;
 - minimapa, costas con espuma, ruinas y barras de vida de zombis;
 - chat asíncrono: la ventana no se congela mientras DeepSeek responde;
+- economía con monedas por zombi y refugio/taller con mejoras persistentes;
 - Docker, compose y Makefile;
 - meta-progresión: memorias entre runs y rasgo veterano tras 10 muertes.
 

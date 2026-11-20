@@ -16,6 +16,15 @@ from config import DATABASE_PATH, SCHEMA_PATH
 
 logger = logging.getLogger(__name__)
 
+_SUPPLEMENTARY_SCHEMA = """
+CREATE TABLE IF NOT EXISTS shelter (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    level INTEGER NOT NULL DEFAULT 0,
+    weapon_level INTEGER NOT NULL DEFAULT 0
+);
+INSERT OR IGNORE INTO shelter (id) VALUES (1);
+"""
+
 
 def connect(db_path: Path = DATABASE_PATH) -> sqlite3.Connection:
     """Abre una conexión con los PRAGMA obligatorios ya aplicados."""
@@ -56,9 +65,8 @@ def init_db(
     """Crea el esquema de forma idempotente si aún no está inicializado."""
     schema_sql = schema_path.read_text(encoding="utf-8")
     with get_connection(db_path) as connection:
-        if _schema_is_initialized(connection):
-            logger.debug("El esquema ya existe en %s", db_path)
-            return
-        connection.executescript(schema_sql)
+        if not _schema_is_initialized(connection):
+            connection.executescript(schema_sql)
+        connection.executescript(_SUPPLEMENTARY_SCHEMA)
         connection.commit()
     logger.info("Base de datos inicializada en %s", db_path)

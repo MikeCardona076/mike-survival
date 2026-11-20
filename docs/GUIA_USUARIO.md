@@ -78,12 +78,14 @@ La base de datos se guarda en `./data`.
 ## Cómo se juega
 
 1. Se abre una ventana de 1280×720 con el mundo, el HUD y el chat.
-2. Mike avanza y actúa solo cada pocos segundos.
+2. Mike avanza y actúa solo cada pocos segundos; su objetivo actual
+   aparece en el HUD (`OBJ`).
 3. Escribe en la barra inferior y pulsa **Enter** para hablar con él.
 4. Mike responde por radio y, si hace falta, usa herramientas para moverse,
    escanear, comer, beber, curarse, atacar o recordar algo.
-5. La partida termina si Mike muere. La siguiente run conserva recuerdos,
-   estadísticas y desbloqueos.
+5. Pulsa **Tab** para abrir el refugio, comprar recursos y mejorar.
+6. La partida termina si Mike muere. La siguiente run conserva recuerdos,
+   estadísticas, desbloqueos y mejoras del refugio.
 
 ### Controles
 
@@ -92,7 +94,8 @@ La base de datos se guarda en `./data`.
 | Cualquier letra/número | Escribir en la radio |
 | `Enter` | Enviar mensaje al Operador |
 | `Backspace` | Borrar carácter |
-| `Esc` | Salir del juego |
+| `Tab` | Abrir/cerrar el refugio y taller |
+| `Esc` | Salir del juego (o cerrar el refugio) |
 | Cerrar ventana | Salir del juego |
 
 ### La radio y los tokens
@@ -120,6 +123,8 @@ La base de datos se guarda en `./data`.
 - **TURNO:** cada turno dura 5 segundos.
 - **RASGO:** modificador aleatorio de la run (`neutral`, `resiliente`,
   `explorador` o `veterano` si está desbloqueado).
+- **MONEDAS:** se ganan al matar zombis y se gastan en el refugio.
+- **OBJ:** objetivo que Mike intenta cumplir en ese momento.
 - **MAPA:** minimapa de la zona con el terreno, Mike, los zombis y la
   dirección del Refugio 7. Se oculta mientras Mike responde por radio.
 
@@ -132,9 +137,34 @@ La base de datos se guarda en `./data`.
 | Supresor | Baja la infección |
 | Venda | Recupera salud |
 | Chatarra | Material de saqueo |
+| Madera | Recursos para el refugio |
+| Hierro | Recursos para el refugio |
+| Monedas | Se ganan matando zombis |
 
 Mike puede encontrar objetos solo al rebuscar. Tú también puedes pedirle
 que lo haga por radio.
+
+### Refugio y taller
+
+![Refugio y taller](images/shelter.png)
+
+Pulsa **Tab** para abrir el refugio. Mientras está abierto el tiempo se
+detiene y Mike no recibe daño.
+
+- **Monedas:** cada zombi muerto suelta monedas (3–8 según el subtipo).
+- **Madera y hierro:** se consiguen rebuscando o comprando.
+- **Comprar madera:** `1` — 5 monedas, +2 madera.
+- **Comprar hierro:** `2` — 8 monedas, +1 hierro.
+- **Mejorar refugio:** `3` — 6 madera + 3 hierro; +10 salud máxima por
+  nivel (máximo 3).
+- **Mejorar arma:** `4` — 4 madera + 4 hierro; +7 daño cuerpo a cuerpo
+  por nivel (máximo 3).
+- **Curar a Mike:** `5` — 10 monedas.
+- **Cerrar:** `Tab`, `B` o `Esc`.
+
+Las mejoras del refugio y del arma son **persistentes entre runs**. Las
+monedas y los materiales de cada partida se reinician al empezar una run
+nueva.
 
 ### Zombis
 

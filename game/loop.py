@@ -7,6 +7,7 @@ import sqlite3
 
 from config import (
     GLOBAL_MEMORY_IMPORTANCE,
+    HEAL_PRICE,
     INITIAL_ZOMBIES,
     INSTINCT_FLEE_HEALTH,
     INSTINCT_HEAL_THRESHOLD,
@@ -16,17 +17,33 @@ from config import (
     INSTINCT_SCAVENGE_CHANCE,
     INSTINCT_SCAVENGE_LOW_CHANCE,
     INSTINCT_THIRST_THRESHOLD,
+    IRON_PACK,
+    IRON_PRICE,
+    ITEM_COIN,
     ITEM_FOOD,
+    ITEM_IRON,
     ITEM_NAMES,
     ITEM_WATER,
+    ITEM_WOOD,
     MAX_ZOMBIES,
     META_UNLOCK_VETERAN,
     RUN_STATUS_DEAD,
     SCAVENGE_ITEMS,
+    SHELTER_HEALTH_BONUS,
+    SHELTER_IRON_COST,
+    SHELTER_MAX_LEVEL,
+    SHELTER_WOOD_COST,
     TILE_SIZE,
     TRAIT_UNLOCK_DEATHS,
     TURN_SECONDS,
     WALKABLE_TILE_IDS,
+    WEAPON_DAMAGE_BONUS,
+    WEAPON_IRON_COST,
+    WEAPON_MAX_LEVEL,
+    WEAPON_WOOD_COST,
+    WOOD_PACK,
+    WOOD_PRICE,
+    ZOMBIE_COIN_REWARDS,
     ZOMBIE_SPAWN_CHANCE,
 )
 from db.repositories import (
@@ -39,6 +56,8 @@ from db.repositories import (
     MetaProgressionRepository,
     Run,
     RunRepository,
+    Shelter,
+    ShelterRepository,
     StatsRepository,
 )
 from game.combat import attack_zombie
@@ -57,12 +76,21 @@ class GameSession:
         mike: Mike | None = None,
         *,
         instincts: bool = True,
+        shelter: Shelter | None = None,
     ) -> None:
         self.run = run
         self.connection = connection
         self.world = World(run.id, run.seed, connection)
-        self.mike = Mike.from_trait(run.trait) if mike is None else mike
+        self._shelter_repository = ShelterRepository(connection)
+        self.shelter = self._shelter_repository.get() if shelter is None else shelter
         self._instincts_enabled = instincts
+        if mike is None:
+            self.mike = Mike.from_trait(run.trait)
+            self.mike.max_health += self.shelter.level * SHELTER_HEALTH_BONUS
+            self.mike.health = self.mike.max_health
+            self.mike.melee_damage += self.shelter.weapon_level * WEAPON_DAMAGE_BONUS
+        else:
+            self.mike = mike
         self.elapsed_seconds = 0.0
         self.events: list[str] = []
         self._state_repository = AgentStateRepository(connection)
@@ -117,6 +145,108 @@ class GameSession:
     def global_memories(self, limit: int = 5) -> list[MemoryEntry]:
         """Recuerdos de runs anteriores para el prompt de Mike."""
         return self._memory_repository.list_global(limit)
+
+    @property
+    def objective(self) -> str:
+        """Objetivo actual que Mike intenta cumplir."""
+        if not self.mike.alive:
+            return "Muerto"
+        if self.mike.health <= self.mike.max_health * 0.35:
+            return "Curarse"
+        close_zombies = [
+            zombie for zombie in self.zombies if zombie.alive and zombie.distance_to(self.mike) <= 3
+        ]
+        if close_zombies:
+            return "Defenderse"
+        supplies = self.mike.inventory.count(ITEM_FOOD) + self.mike.inventory.count(ITEM_WATER)
+        if supplies <= INSTINCT_LOW_SUPPLIES:
+            return "Buscar suministros"
+        can_upgrade = (
+            self.shelter.level < SHELTER_MAX_LEVEL
+            and self.mike.inventory.count(ITEM_WOOD) >= SHELTER_WOOD_COST
+            and self.mike.inventory.count(ITEM_IRON) >= SHELTER_IRON_COST
+        ) or (
+            self.shelter.weapon_level < WEAPON_MAX_LEVEL
+            and self.mike.inventory.count(ITEM_WOOD) >= WEAPON_WOOD_COST
+            and self.mike.inventory.count(ITEM_IRON) >= WEAPON_IRON_COST
+        )
+        if can_upgrade:
+            return "Mejorar el refugio"
+        return "Avanzar al Refugio 7"
+
+    def buy_wood(self) -> str:
+        """Compra madera con monedas."""
+        if not self.mike.inventory.remove(ITEM_COIN, WOOD_PRICE):
+            return f"Faltan monedas: necesitas {WOOD_PRICE}."
+        self.mike.inventory.add(ITEM_WOOD, WOOD_PACK)
+        self.persist()
+        return f"Compras {WOOD_PACK} de madera."
+
+    def buy_iron(self) -> str:
+        """Compra hierro con monedas."""
+        if not self.mike.inventory.remove(ITEM_COIN, IRON_PRICE):
+            return f"Faltan monedas: necesitas {IRON_PRICE}."
+        self.mike.inventory.add(ITEM_IRON, IRON_PACK)
+        self.persist()
+        return f"Compras {IRON_PACK} de hierro."
+
+    def upgrade_shelter(self) -> str:
+        """Sube el nivel del refugio y aumenta la salud máxima."""
+        if self.shelter.level >= SHELTER_MAX_LEVEL:
+            return "El refugio ya está al máximo."
+        if not (
+            self.mike.inventory.count(ITEM_WOOD) >= SHELTER_WOOD_COST
+            and self.mike.inventory.count(ITEM_IRON) >= SHELTER_IRON_COST
+        ):
+            return (
+                f"Faltan materiales: {SHELTER_WOOD_COST} madera y " f"{SHELTER_IRON_COST} hierro."
+            )
+        self.mike.inventory.remove(ITEM_WOOD, SHELTER_WOOD_COST)
+        self.mike.inventory.remove(ITEM_IRON, SHELTER_IRON_COST)
+        self.shelter = Shelter(
+            level=self.shelter.level + 1,
+            weapon_level=self.shelter.weapon_level,
+        )
+        self._shelter_repository.update(self.shelter)
+        self.mike.max_health += SHELTER_HEALTH_BONUS
+        self.mike.health = self.mike.max_health
+        self.persist()
+        return f"Refugio nivel {self.shelter.level}. Salud máxima +{SHELTER_HEALTH_BONUS}."
+
+    def upgrade_weapon(self) -> str:
+        """Mejora el arma de Mike y aumenta su daño cuerpo a cuerpo."""
+        if self.shelter.weapon_level >= WEAPON_MAX_LEVEL:
+            return "El arma ya está al máximo."
+        if not (
+            self.mike.inventory.count(ITEM_WOOD) >= WEAPON_WOOD_COST
+            and self.mike.inventory.count(ITEM_IRON) >= WEAPON_IRON_COST
+        ):
+            return f"Faltan materiales: {WEAPON_WOOD_COST} madera y " f"{WEAPON_IRON_COST} hierro."
+        self.mike.inventory.remove(ITEM_WOOD, WEAPON_WOOD_COST)
+        self.mike.inventory.remove(ITEM_IRON, WEAPON_IRON_COST)
+        self.shelter = Shelter(
+            level=self.shelter.level,
+            weapon_level=self.shelter.weapon_level + 1,
+        )
+        self._shelter_repository.update(self.shelter)
+        self.mike.melee_damage += WEAPON_DAMAGE_BONUS
+        self.persist()
+        return f"Arma nivel {self.shelter.weapon_level}. Daño +{WEAPON_DAMAGE_BONUS}."
+
+    def heal_at_shelter(self) -> str:
+        """Cura a Mike a cambio de monedas."""
+        if self.mike.health >= self.mike.max_health:
+            return "Mike ya está curado."
+        if not self.mike.inventory.remove(ITEM_COIN, HEAL_PRICE):
+            return f"Faltan monedas: necesitas {HEAL_PRICE}."
+        self.mike.health = self.mike.max_health
+        self.persist()
+        return "Mike se cura por completo en el refugio."
+
+    def _reward_kill(self, zombie: Zombie) -> None:
+        coins = ZOMBIE_COIN_REWARDS.get(zombie.kind, 1)
+        self.mike.inventory.add(ITEM_COIN, coins)
+        self.events.append(f"Mike consigue {coins} monedas.")
 
     def add_event(self, text: str) -> None:
         """Añade una línea al log de eventos visible en la interfaz."""
@@ -189,6 +319,7 @@ class GameSession:
                 events.append(f"Mike ataca por instinto. {message}")
                 if killed:
                     self.zombies.remove(nearest)
+                    self._reward_kill(nearest)
                     self._event_repository.add(self.run.id, "combat", message)
                 return events
             if distance <= 3 and mike.health <= INSTINCT_FLEE_HEALTH:
@@ -294,6 +425,7 @@ class GameSession:
         message, killed = attack_zombie(self.mike, nearest)
         if killed:
             self.zombies.remove(nearest)
+            self._reward_kill(nearest)
             self._event_repository.add(self.run.id, "combat", message)
         self.events.append(message)
         self.persist()
@@ -312,6 +444,7 @@ class GameSession:
             pos_y=self.mike.pos_y,
             inventory=self.mike.inventory.to_json(),
             turn_count=self.mike.turn_count,
+            objective=self.objective,
         )
 
     def _finish_run(self) -> None:

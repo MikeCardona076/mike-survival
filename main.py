@@ -47,6 +47,7 @@ from game.world import generate_refugio7
 from ui.chat import ChatPanel
 from ui.hud import Hud
 from ui.map import Minimap
+from ui.shelter import ShelterPanel
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +115,21 @@ def _queue_operator_message(
     return True
 
 
+def _apply_shelter_action(session: GameSession, action: str) -> str:
+    """Ejecuta una compra o mejora del refugio y devuelve el mensaje."""
+    if action == "wood":
+        return session.buy_wood()
+    if action == "iron":
+        return session.buy_iron()
+    if action == "shelter":
+        return session.upgrade_shelter()
+    if action == "weapon":
+        return session.upgrade_weapon()
+    if action == "heal":
+        return session.heal_at_shelter()
+    return "Acción desconocida."
+
+
 def create_run(seed: int | None = None) -> Run:
     """Crea una run con su estado inicial de Mike y devuelve la run."""
     actual_seed = secrets.randbits(SEED_BITS) if seed is None else seed
@@ -154,6 +170,7 @@ def run_game(
         renderer = Renderer(screen, sprites)
         hud = Hud(screen)
         minimap = Minimap(screen)
+        shelter_panel = ShelterPanel(screen)
         chat = ChatPanel(screen)
         game_over_font = pygame.font.Font(None, 56)
         game_over_small = pygame.font.Font(None, 24)
@@ -168,11 +185,31 @@ def run_game(
         frames = 0
         running = True
         pending_response = False
+        shelter_open = False
         while running:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT or (
-                    event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
+                if event.type == pygame.QUIT:
+                    running = False
+                    continue
+                if shelter_open:
+                    action = shelter_panel.handle_event(event)
+                    if action == "close":
+                        shelter_open = False
+                    elif action is not None:
+                        message = _apply_shelter_action(session, action)
+                        shelter_panel.set_message(message)
+                        chat.add_message("system", message)
+                    continue
+                if (
+                    event.type == pygame.KEYDOWN
+                    and event.key == pygame.K_TAB
+                    and not pending_response
+                    and not session.is_over
                 ):
+                    shelter_open = True
+                    shelter_panel.set_message("")
+                    continue
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     running = False
                     continue
                 if pending_response:
@@ -199,7 +236,7 @@ def run_game(
                     )
 
             delta_seconds = min(clock.tick(FPS) / 1000.0, MAX_FRAME_DELTA)
-            if not pending_response:
+            if not pending_response and not shelter_open:
                 session.update(delta_seconds)
                 for text in session.events[shown_events:]:
                     chat.add_message("system", text)
@@ -221,8 +258,8 @@ def run_game(
                 session.mike,
                 session.zombies,
             )
-            hud.draw(session.mike, session.run.trait)
-            if not pending_response:
+            hud.draw(session.mike, session.run.trait, session.objective)
+            if not pending_response and not shelter_open:
                 minimap.draw(
                     session.world,
                     session.mike,
@@ -238,6 +275,8 @@ def run_game(
                     session.mike.cause_of_death,
                 )
             chat.draw()
+            if shelter_open:
+                shelter_panel.draw(session.mike, session.shelter)
             pygame.display.flip()
 
             frames += 1

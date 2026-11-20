@@ -53,6 +53,7 @@ class Mike:
     """Estado completo de Mike durante una run."""
 
     health: int = STARTING_HEALTH
+    max_health: int = MAX_HEALTH
     hunger: int = 0
     thirst: int = 0
     infection: int = 0
@@ -135,7 +136,7 @@ class Mike:
         """Recupera salud sin superar el máximo."""
         if amount < 0:
             raise ValueError("La curación no puede ser negativa")
-        self.health = min(MAX_HEALTH, self.health + amount)
+        self.health = min(self.max_health, self.health + amount)
 
     def eat(self) -> bool:
         """Consume comida y reduce el hambre."""

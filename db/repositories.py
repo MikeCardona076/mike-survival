@@ -568,3 +568,37 @@ class MetaProgressionRepository:
             "SELECT unlock_key FROM meta_progression ORDER BY unlocked_at ASC"
         ).fetchall()
         return [str(row["unlock_key"]) for row in rows]
+
+
+@dataclass(frozen=True, slots=True)
+class Shelter:
+    """Mejoras persistentes del refugio/taller."""
+
+    level: int
+    weapon_level: int
+
+
+class ShelterRepository:
+    """Lee y guarda el nivel del refugio y del arma."""
+
+    def __init__(self, connection: sqlite3.Connection) -> None:
+        self._connection = connection
+
+    def get(self) -> Shelter:
+        row = self._connection.execute(
+            "SELECT level, weapon_level FROM shelter WHERE id = 1"
+        ).fetchone()
+        if row is None:
+            raise RuntimeError("La tabla shelter no está inicializada")
+        return Shelter(
+            level=int(row["level"]),
+            weapon_level=int(row["weapon_level"]),
+        )
+
+    def update(self, shelter: Shelter) -> None:
+        cursor = self._connection.execute(
+            "UPDATE shelter SET level = ?, weapon_level = ? WHERE id = 1",
+            (shelter.level, shelter.weapon_level),
+        )
+        if cursor.rowcount == 0:
+            raise RuntimeError("No se pudo actualizar el refugio")

@@ -99,3 +99,11 @@ CREATE TABLE stats (
 );
 
 INSERT OR IGNORE INTO stats (id) VALUES (1);
+
+CREATE TABLE shelter (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    level INTEGER NOT NULL DEFAULT 0,
+    weapon_level INTEGER NOT NULL DEFAULT 0
+);
+
+INSERT OR IGNORE INTO shelter (id) VALUES (1);

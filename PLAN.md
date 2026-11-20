@@ -5,10 +5,10 @@ de cada turno y lo actualiza al final de cada fase.
 
 ## ESTADO ACTUAL
 
-- **Fase en curso:** 9
-- **Tarea actual:** Persistencia entre runs, meta-progresión y balanceo
+- **Fase en curso:** — (9/9 completadas)
+- **Tarea actual:** Proyecto completo y verificado; listo para publicar.
 - **Última actualización:** 2026-11-19
-- **Commit de referencia:** c453f49
+- **Commit de referencia:** 4946b6c
 
 ## PLAN DE FASE 1 (COMPLETADO)
 
@@ -116,7 +116,7 @@ de cada turno y lo actualiza al final de cada fase.
 - [x] **Fase 6** — Zombis, combate y eventos narrativos ✅
 - [x] **Fase 7** — Assets procedurales (sprites, SFX, música) ✅
 - [x] **Fase 8** — Docker, Makefile y distribución ✅
-- [ ] **Fase 9** — Persistencia entre runs, meta-progresión y balanceo — EN CURSO
+- [x] **Fase 9** — Persistencia entre runs, meta-progresión y balanceo ✅
 
 ## DETALLE POR FASE
 
@@ -205,4 +205,5 @@ de cada turno y lo actualiza al final de cada fase.
 [F6] Zombis, combate y eventos — OK (2314ff4)
 [F7] Sprites procedurales y audio — OK (f778c2e)
 [F8] Docker, compose y distribución — OK (c453f49)
-[F9] Rasgos, memoria global y meta-progresión — INICIO
+[F9] Rasgos, memoria global y meta-progresión — OK (4946b6c)
+[F9] Verificación final Docker: suite completa, lint y captura — OK

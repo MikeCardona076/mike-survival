@@ -7,13 +7,20 @@ de DeepSeek (`deepseek-flash`) con function calling.
 
 ## Estado
 
-Fases 1–7 completas:
+**Proyecto completo — 9/9 fases.**
 
 - mundo por chunks con dos capas de Perlin y persistencia SQLite;
-- Mike con salud, hambre, sed, infección y batería;
+- Mike con salud, hambre, sed, infección, batería, inventario y rasgos;
 - HUD, chat de radio con typewriter y agente DeepSeek con 10 tools;
 - 4 subtipos de zombi, combate, eventos narrativos y game over;
-- sprites procedurales cacheados y SFX generados con pyfxr.
+- sprites procedurales cacheados y SFX generados con pyfxr;
+- Docker, compose y Makefile;
+- meta-progresión: memorias entre runs y rasgo veterano tras 10 muertes.
+
+Cada run recibe un rasgo aleatorio (`neutral`, `resiliente` o `explorador`,
+más `veterano` cuando se desbloquea). Al morir, Mike deja un recuerdo
+global que aparece en el prompt de las siguientes runs. Las estadísticas
+persisten en `stats` y la meta-progresión en `meta_progression`.
 
 ## Cómo jugar
 
@@ -69,7 +76,7 @@ herramientas, `ui/` HUD y chat, `assets/` sprites y audio procedural,
 6. ✅ Zombis, combate y eventos
 7. ✅ Assets y audio procedurales
 8. ✅ Docker y distribución
-9. Persistencia y meta-progresión
+9. ✅ Persistencia y meta-progresión
 
 ## Licencia
 

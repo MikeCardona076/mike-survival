@@ -480,3 +480,42 @@ class WorldChunkRepository:
             (run_id,),
         ).fetchone()
         return 0 if row is None else int(row["total"])
+
+
+class AssetCacheRepository:
+    """Caché de assets procedurales en la tabla ``assets_cache``."""
+
+    def __init__(self, connection: sqlite3.Connection) -> None:
+        self._connection = connection
+
+    def get(self, asset_key: str) -> bytes | None:
+        row = self._connection.execute(
+            "SELECT data FROM assets_cache WHERE asset_key = ?",
+            (asset_key,),
+        ).fetchone()
+        return None if row is None else bytes(row["data"])
+
+    def save(
+        self,
+        asset_key: str,
+        asset_type: str,
+        description: str,
+        data: bytes,
+        params: str | None = None,
+    ) -> None:
+        self._connection.execute(
+            """
+            INSERT INTO assets_cache (asset_key, asset_type, description, params, data)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(asset_key) DO UPDATE SET
+                asset_type = excluded.asset_type,
+                description = excluded.description,
+                params = excluded.params,
+                data = excluded.data
+            """,
+            (asset_key, asset_type, description, params, data),
+        )
+
+    def count(self) -> int:
+        row = self._connection.execute("SELECT COUNT(*) AS total FROM assets_cache").fetchone()
+        return 0 if row is None else int(row["total"])

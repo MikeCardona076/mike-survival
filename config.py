@@ -222,3 +222,25 @@ EVENT_TYPES: Final[tuple[str, ...]] = (
 EVENT_STORM_DAMAGE: Final[int] = 4
 EVENT_RADIO_BONUS: Final[int] = 12
 EVENT_INFECTION_BUMP: Final[int] = 5
+
+# Assets procedurales.
+SPRITE_SIZE: Final[int] = 16
+SPRITE_MIKE: Final[str] = "mike"
+SPRITE_MIKE_HURT: Final[str] = "mike_hurt"
+SPRITE_ZOMBIE_PREFIX: Final[str] = "zombie_"
+SPRITE_ITEM_PREFIX: Final[str] = "item_"
+SPRITE_KEYS: Final[tuple[str, ...]] = (
+    SPRITE_MIKE,
+    SPRITE_MIKE_HURT,
+    "zombie_walker",
+    "zombie_runner",
+    "zombie_brute",
+    "zombie_screecher",
+    "item_food",
+    "item_water",
+    "item_suppressor",
+    "item_bandage",
+)
+ASSET_TYPE_SPRITE: Final[str] = "sprite"
+AUDIO_SAMPLE_RATE: Final[int] = 44100
+AUDIO_VOLUME: Final[float] = 0.35

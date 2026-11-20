@@ -15,12 +15,16 @@ from config import (
     CHUNK_PIXELS,
     COLOR_BACKGROUND,
     MIKE_COLOR,
+    SPRITE_MIKE,
+    SPRITE_MIKE_HURT,
+    SPRITE_ZOMBIE_PREFIX,
     TILE_COLORS,
     TILE_SIZE,
     ZOMBIE_COLORS,
 )
 
 if TYPE_CHECKING:
+    from assets.sprites import SpriteSet
     from game.entities import Mike, Zombie
     from game.world import World
 
@@ -28,10 +32,11 @@ if TYPE_CHECKING:
 class Renderer:
     """Dibuja el mundo en una superficie de pygame."""
 
-    def __init__(self, screen: pygame.Surface) -> None:
+    def __init__(self, screen: pygame.Surface, sprites: SpriteSet | None = None) -> None:
         self._screen = screen
         self._width = screen.get_width()
         self._height = screen.get_height()
+        self._sprites = sprites
 
     def _viewport_origin(self, camera_x: float, camera_y: float) -> tuple[float, float]:
         """Devuelve la esquina superior izquierda de la vista en píxeles."""
@@ -88,25 +93,40 @@ class Renderer:
         """Dibuja a Mike y a los zombis visibles encima del terreno."""
         left, top = self._viewport_origin(camera_x, camera_y)
         viewport = self._screen.get_rect()
-        size = TILE_SIZE - 4
 
         for zombie in zombies:
             if not zombie.alive:
                 continue
             rect = pygame.Rect(
-                int(zombie.x * TILE_SIZE - left) + 2,
-                int(zombie.y * TILE_SIZE - top) + 2,
-                size,
-                size,
+                int(zombie.x * TILE_SIZE - left),
+                int(zombie.y * TILE_SIZE - top),
+                TILE_SIZE,
+                TILE_SIZE,
             )
-            if viewport.colliderect(rect):
-                pygame.draw.rect(self._screen, ZOMBIE_COLORS[zombie.kind], rect)
+            if not viewport.colliderect(rect):
+                continue
+            if self._sprites is None:
+                pygame.draw.rect(
+                    self._screen,
+                    ZOMBIE_COLORS[zombie.kind],
+                    rect.inflate(-4, -4),
+                )
+            else:
+                self._screen.blit(
+                    self._sprites.get(f"{SPRITE_ZOMBIE_PREFIX}{zombie.kind}"),
+                    rect.topleft,
+                )
 
         mike_rect = pygame.Rect(
-            int(mike.pos_x * TILE_SIZE - left) + 2,
-            int(mike.pos_y * TILE_SIZE - top) + 2,
-            size,
-            size,
+            int(mike.pos_x * TILE_SIZE - left),
+            int(mike.pos_y * TILE_SIZE - top),
+            TILE_SIZE,
+            TILE_SIZE,
         )
-        if viewport.colliderect(mike_rect):
-            pygame.draw.rect(self._screen, MIKE_COLOR, mike_rect)
+        if not viewport.colliderect(mike_rect):
+            return
+        if self._sprites is None:
+            pygame.draw.rect(self._screen, MIKE_COLOR, mike_rect.inflate(-4, -4))
+        else:
+            sprite_key = SPRITE_MIKE_HURT if mike.health <= 30 else SPRITE_MIKE
+            self._screen.blit(self._sprites.get(sprite_key), mike_rect.topleft)

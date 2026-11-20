@@ -14,7 +14,10 @@ import sqlite3
 import pygame
 
 from agent.client import AgentClient, AgentUnavailable
+from assets.audio import AudioManager
+from assets.sprites import SpriteSet
 from config import (
+    AUDIO_SAMPLE_RATE,
     DEFAULT_TRAIT,
     FPS,
     MAX_FRAME_DELTA,
@@ -34,6 +37,18 @@ from ui.chat import ChatPanel
 from ui.hud import Hud
 
 logger = logging.getLogger(__name__)
+
+
+def _play_event_sound(audio: AudioManager, text: str) -> None:
+    lower = text.lower()
+    if "muerto" in lower or "ha muerto" in lower:
+        audio.play("death")
+    elif "ataca" in lower or "golpea" in lower or "derriba" in lower:
+        audio.play("hit")
+    elif "supresor" in lower:
+        audio.play("suppressor")
+    elif "encuentra" in lower or "provisiones" in lower:
+        audio.play("pickup")
 
 
 def _send_operator_message(
@@ -86,6 +101,7 @@ def run_game(
     max_frames: int | None = None,
 ) -> int:
     """Abre la ventana y ejecuta el bucle de render hasta cerrar."""
+    pygame.mixer.pre_init(AUDIO_SAMPLE_RATE, -16, 1)
     pygame.init()
     try:
         screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -93,7 +109,9 @@ def run_game(
         clock = pygame.time.Clock()
         session = GameSession(run, connection)
         agent = AgentClient(session)
-        renderer = Renderer(screen)
+        sprites = SpriteSet(connection)
+        audio = AudioManager()
+        renderer = Renderer(screen, sprites)
         hud = Hud(screen)
         chat = ChatPanel(screen)
 
@@ -110,18 +128,21 @@ def run_game(
                     continue
                 submitted = chat.handle_event(event)
                 if submitted is not None:
+                    audio.play("radio")
                     _send_operator_message(session, agent, chat, submitted)
 
             delta_seconds = min(clock.tick(FPS) / 1000.0, MAX_FRAME_DELTA)
             session.update(delta_seconds)
             for text in session.events[shown_events:]:
                 chat.add_message("system", text)
+                _play_event_sound(audio, text)
             shown_events = len(session.events)
             if session.is_over and not game_over_shown:
                 chat.add_message(
                     "system",
                     f"MIKE HA MUERTO ({session.mike.cause_of_death}).",
                 )
+                audio.play("death")
                 game_over_shown = True
 
             chat.update(delta_seconds)

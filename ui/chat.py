@@ -43,6 +43,11 @@ class ChatPanel:
         self._entries: list[ChatEntry] = []
         self._input = ""
         self._typing_progress = 0.0
+        self._waiting = False
+
+    def set_waiting(self, waiting: bool) -> None:
+        """Muestra u oculta el estado «Mike está respondiendo»."""
+        self._waiting = waiting
 
     @property
     def input_text(self) -> str:
@@ -146,7 +151,11 @@ class ChatPanel:
             (CHAT_MARGIN + 4, header_y + 6),
             4,
         )
-        header = self._font.render("RADIO · ENLACE CON MIKE", True, CHAT_HEADER_COLOR)
+        header_text = "RADIO · ENLACE CON MIKE"
+        if self._waiting:
+            dots = "." * (pygame.time.get_ticks() // 400 % 4)
+            header_text = f"MIKE ESTÁ RESPONDIENDO{dots}"
+        header = self._font.render(header_text, True, CHAT_HEADER_COLOR)
         self._screen.blit(header, (CHAT_MARGIN + 14, header_y))
 
         input_height = line_height + 8

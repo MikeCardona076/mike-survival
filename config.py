@@ -87,6 +87,24 @@ DECOR_ROCK: Final[tuple[int, int, int]] = (146, 144, 134)
 DECOR_SAND: Final[tuple[int, int, int]] = (224, 206, 150)
 WATER_SPARKLE: Final[tuple[int, int, int]] = (132, 190, 226)
 SHADOW_COLOR: Final[tuple[int, int, int]] = (18, 26, 20)
+SHORE_FOAM: Final[tuple[int, int, int]] = (156, 206, 230)
+DECOR_RUIN: Final[tuple[int, int, int]] = (96, 92, 84)
+MIKE_RING_COLOR: Final[tuple[int, int, int]] = (232, 212, 104)
+ZOMBIE_HEALTH_BACKGROUND: Final[tuple[int, int, int]] = (20, 22, 24)
+ZOMBIE_HEALTH_COLOR: Final[tuple[int, int, int]] = (196, 64, 58)
+
+# Minimapa.
+MINIMAP_MARGIN: Final[int] = 14
+MINIMAP_TILE: Final[int] = 7
+MINIMAP_TILES: Final[int] = 21
+MINIMAP_PAD: Final[int] = 8
+MINIMAP_HEADER: Final[int] = 20
+MINIMAP_BACKGROUND: Final[tuple[int, int, int]] = (16, 19, 24)
+MINIMAP_ALPHA: Final[int] = 218
+MINIMAP_BORDER: Final[tuple[int, int, int]] = (92, 110, 96)
+MINIMAP_MIKE: Final[tuple[int, int, int]] = (244, 236, 196)
+MINIMAP_ZOMBIE: Final[tuple[int, int, int]] = (220, 76, 66)
+MINIMAP_REFUGIO: Final[tuple[int, int, int]] = (236, 204, 90)
 
 # Runs.
 RUN_STATUS_ALIVE: Final[str] = "alive"

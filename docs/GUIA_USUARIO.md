@@ -103,6 +103,9 @@ La base de datos se guarda en `./data`.
 - Límites por mensaje: **2 rondas de herramientas**, **180 tokens de
   salida**, **4 mensajes de historial** y **3 recuerdos**. No hay llamadas
   automáticas a la API: Mike solo consulta a DeepSeek cuando tú escribes.
+- La respuesta llega en segundo plano: la ventana sigue respondiendo y el
+  mundo se pausa suavemente mientras Mike contesta. Verás
+  «MIKE ESTÁ RESPONDIENDO» en la cabecera del chat.
 
 ### El HUD
 
@@ -117,6 +120,8 @@ La base de datos se guarda en `./data`.
 - **TURNO:** cada turno dura 5 segundos.
 - **RASGO:** modificador aleatorio de la run (`neutral`, `resiliente`,
   `explorador` o `veterano` si está desbloqueado).
+- **MAPA:** minimapa de la zona con el terreno, Mike, los zombis y la
+  dirección del Refugio 7. Se oculta mientras Mike responde por radio.
 
 ### Objetos
 

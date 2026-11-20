@@ -17,15 +17,18 @@ from config import (
     COLOR_BACKGROUND,
     DECOR_GRASS,
     DECOR_ROCK,
+    DECOR_RUIN,
     DECOR_SAND,
     DECOR_TREE_DARK,
     DECOR_TREE_LIGHT,
     DECOR_TRUNK,
     ENTITY_DRAW_SIZE,
     MIKE_COLOR,
+    MIKE_RING_COLOR,
     RENDER_SCALE,
     RENDER_TILE_SIZE,
     SHADOW_COLOR,
+    SHORE_FOAM,
     SPRITE_MIKE,
     SPRITE_MIKE_HURT,
     SPRITE_SIZE,
@@ -39,6 +42,8 @@ from config import (
     TILE_WATER,
     WATER_SPARKLE,
     ZOMBIE_COLORS,
+    ZOMBIE_HEALTH_BACKGROUND,
+    ZOMBIE_HEALTH_COLOR,
 )
 
 if TYPE_CHECKING:
@@ -153,6 +158,63 @@ class Renderer:
                 (screen_x + size // 2 - 2, screen_y + size // 2, 5, 1),
             )
 
+        if tile == TILE_ROCK and tile_hash % 7 == 0:
+            pygame.draw.rect(
+                self._screen,
+                DECOR_RUIN,
+                (screen_x + 2, screen_y + 4, 3, 8),
+            )
+            pygame.draw.rect(
+                self._screen,
+                DECOR_RUIN,
+                (screen_x + 9, screen_y + 2, 3, 6),
+            )
+            pygame.draw.line(
+                self._screen,
+                DECOR_RUIN,
+                (screen_x + 3, screen_y + 4),
+                (screen_x + 10, screen_y + 2),
+            )
+
+    def _draw_shore(
+        self,
+        chunk: object,
+        local_x: int,
+        local_y: int,
+        screen_x: int,
+        screen_y: int,
+    ) -> None:
+        size = RENDER_TILE_SIZE
+        row = chunk.tiles[local_y]
+        if local_x > 0 and int(row[local_x - 1]) != TILE_WATER:
+            pygame.draw.line(
+                self._screen,
+                SHORE_FOAM,
+                (screen_x, screen_y + 1),
+                (screen_x, screen_y + size - 2),
+            )
+        if local_x < len(row) - 1 and int(row[local_x + 1]) != TILE_WATER:
+            pygame.draw.line(
+                self._screen,
+                SHORE_FOAM,
+                (screen_x + size - 1, screen_y + 1),
+                (screen_x + size - 1, screen_y + size - 2),
+            )
+        if local_y > 0 and int(chunk.tiles[local_y - 1][local_x]) != TILE_WATER:
+            pygame.draw.line(
+                self._screen,
+                SHORE_FOAM,
+                (screen_x + 1, screen_y),
+                (screen_x + size - 2, screen_y),
+            )
+        if local_y < len(chunk.tiles) - 1 and int(chunk.tiles[local_y + 1][local_x]) != TILE_WATER:
+            pygame.draw.line(
+                self._screen,
+                SHORE_FOAM,
+                (screen_x + 1, screen_y + size - 1),
+                (screen_x + size - 2, screen_y + size - 1),
+            )
+
     def draw(self, world: World, camera_x: float, camera_y: float) -> int:
         """Pinta un frame y devuelve cuántos tiles se dibujaron."""
         self._screen.fill(COLOR_BACKGROUND)
@@ -179,6 +241,14 @@ class Renderer:
                         variants[tile_hash % len(variants)],
                         (screen_x, screen_y, RENDER_TILE_SIZE, RENDER_TILE_SIZE),
                     )
+                    if tile_id == TILE_WATER:
+                        self._draw_shore(
+                            chunk,
+                            local_x,
+                            local_y,
+                            screen_x,
+                            screen_y,
+                        )
                     self._decorate(tile_id, screen_x, screen_y, tile_hash, tick)
                     drawn_tiles += 1
 
@@ -231,6 +301,21 @@ class Renderer:
                 pygame.draw.rect(self._screen, ZOMBIE_COLORS[zombie.kind], rect)
             else:
                 self._screen.blit(sprite, rect.topleft)
+            if zombie.health < zombie.max_health:
+                bar_width = 18
+                bar_x = rect.centerx - bar_width // 2
+                bar_y = rect.top - 5
+                pygame.draw.rect(
+                    self._screen,
+                    ZOMBIE_HEALTH_BACKGROUND,
+                    (bar_x, bar_y, bar_width, 3),
+                )
+                ratio = zombie.health / zombie.max_health
+                pygame.draw.rect(
+                    self._screen,
+                    ZOMBIE_HEALTH_COLOR,
+                    (bar_x, bar_y, int(bar_width * ratio), 3),
+                )
 
         screen_x = round((mike.pos_x * TILE_SIZE - left) * RENDER_SCALE) + offset
         screen_y = round((mike.pos_y * TILE_SIZE - top) * RENDER_SCALE) + offset
@@ -241,6 +326,12 @@ class Renderer:
             self._screen,
             SHADOW_COLOR,
             (mike_rect.centerx - 9, mike_rect.bottom - 6, 18, 6),
+        )
+        pygame.draw.ellipse(
+            self._screen,
+            MIKE_RING_COLOR,
+            (mike_rect.centerx - 13, mike_rect.bottom - 9, 26, 9),
+            width=1,
         )
         sprite_key = SPRITE_MIKE_HURT if mike.health <= 30 else SPRITE_MIKE
         sprite = self._entity_sprite(sprite_key)

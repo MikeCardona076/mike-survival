@@ -13,7 +13,8 @@ import sqlite3
 
 import pygame
 
-from agent.client import AgentClient, AgentUnavailable
+from agent.client import AgentClient
+from agent.worker import AgentWorker
 from assets.audio import AudioManager
 from assets.sprites import SpriteSet
 from config import (
@@ -45,6 +46,7 @@ from game.renderer import Renderer
 from game.world import generate_refugio7
 from ui.chat import ChatPanel
 from ui.hud import Hud
+from ui.map import Minimap
 
 logger = logging.getLogger(__name__)
 
@@ -80,32 +82,36 @@ def _draw_game_over(
     screen.blit(subtitle, subtitle.get_rect(center=(WINDOW_WIDTH // 2, center_y + 44)))
 
 
-def _send_operator_message(
+def _queue_operator_message(
     session: GameSession,
     agent: AgentClient,
+    worker: AgentWorker,
     chat: ChatPanel,
     text: str,
-) -> None:
-    """Envía un mensaje de radio, cobra batería y muestra la respuesta."""
+) -> bool:
+    """Prepara el mensaje y lo lanza en segundo plano; devuelve si quedó pendiente."""
     chat.add_message("operator", text)
     if session.is_over:
         chat.add_message("system", "Mike ya no responde.")
-        return
+        return False
     if not agent.available:
         chat.add_message("system", "Radio sin enlace: define DEEPSEEK_API_KEY en .env.")
-        return
+        return False
+    if worker.busy:
+        chat.add_message("system", "Mike todavía está respondiendo.")
+        return False
 
     cost = random.randint(RADIO_COST_MIN, RADIO_COST_MAX)
     if not session.mike.spend_radio(cost):
         chat.add_message("system", "Batería de radio agotada.")
-        return
+        return False
     session.persist()
-    try:
-        result = agent.respond(text)
-    except AgentUnavailable as error:
-        chat.add_message("system", str(error))
-        return
-    chat.add_message("assistant", result.text)
+    chat.set_waiting(True)
+    if not worker.submit(text):
+        chat.set_waiting(False)
+        chat.add_message("system", "No se pudo enviar el mensaje.")
+        return False
+    return True
 
 
 def create_run(seed: int | None = None) -> Run:
@@ -135,16 +141,19 @@ def run_game(
     """Abre la ventana y ejecuta el bucle de render hasta cerrar."""
     pygame.mixer.pre_init(AUDIO_SAMPLE_RATE, -16, 1)
     pygame.init()
+    worker: AgentWorker | None = None
     try:
         screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption(WINDOW_TITLE)
         clock = pygame.time.Clock()
         session = GameSession(run, connection)
         agent = AgentClient(session)
+        worker = AgentWorker(agent)
         sprites = SpriteSet(connection)
         audio = AudioManager()
         renderer = Renderer(screen, sprites)
         hud = Hud(screen)
+        minimap = Minimap(screen)
         chat = ChatPanel(screen)
         game_over_font = pygame.font.Font(None, 56)
         game_over_small = pygame.font.Font(None, 24)
@@ -158,6 +167,7 @@ def run_game(
         game_over_shown = False
         frames = 0
         running = True
+        pending_response = False
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (
@@ -165,17 +175,36 @@ def run_game(
                 ):
                     running = False
                     continue
+                if pending_response:
+                    continue
                 submitted = chat.handle_event(event)
                 if submitted is not None:
                     audio.play("radio")
-                    _send_operator_message(session, agent, chat, submitted)
+                    pending_response = _queue_operator_message(
+                        session,
+                        agent,
+                        worker,
+                        chat,
+                        submitted,
+                    )
+
+            if pending_response:
+                result = worker.poll()
+                if result is not None:
+                    pending_response = False
+                    chat.set_waiting(False)
+                    chat.add_message(
+                        "assistant" if result.ok else "system",
+                        result.text,
+                    )
 
             delta_seconds = min(clock.tick(FPS) / 1000.0, MAX_FRAME_DELTA)
-            session.update(delta_seconds)
-            for text in session.events[shown_events:]:
-                chat.add_message("system", text)
-                _play_event_sound(audio, text)
-            shown_events = len(session.events)
+            if not pending_response:
+                session.update(delta_seconds)
+                for text in session.events[shown_events:]:
+                    chat.add_message("system", text)
+                    _play_event_sound(audio, text)
+                shown_events = len(session.events)
             if session.is_over and not game_over_shown:
                 chat.add_message(
                     "system",
@@ -193,6 +222,13 @@ def run_game(
                 session.zombies,
             )
             hud.draw(session.mike, session.run.trait)
+            if not pending_response:
+                minimap.draw(
+                    session.world,
+                    session.mike,
+                    session.zombies,
+                    session.run,
+                )
             if session.is_over:
                 _draw_game_over(
                     screen,
@@ -208,6 +244,8 @@ def run_game(
             if max_frames is not None and frames >= max_frames:
                 running = False
     finally:
+        if worker is not None:
+            worker.join()
         pygame.quit()
 
     return 0

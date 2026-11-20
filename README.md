@@ -29,6 +29,8 @@ controles, HUD, estrategia, configuración y solución de problemas.
 - sprites procedurales cacheados y SFX generados con pyfxr;
 - terreno con variación de color, árboles, rocas y detalles procedurales;
 - HUD translúcido, chat redondeado y sprites de 24 px con sombras;
+- minimapa, costas con espuma, ruinas y barras de vida de zombis;
+- chat asíncrono: la ventana no se congela mientras DeepSeek responde;
 - Docker, compose y Makefile;
 - meta-progresión: memorias entre runs y rasgo veterano tras 10 muertes.
 

@@ -22,3 +22,7 @@ data/*
 # Sistema operativo
 .DS_Store
 Thumbs.db
+
+# Planes internos de construcción (no se publican)
+PLAN.md
+PHASE_*_DONE.md

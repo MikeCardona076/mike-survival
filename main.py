@@ -1,18 +1,32 @@
 """Punto de entrada de MIKE: SEÑAL DE SUPERVIVENCIA.
 
-En la Fase 1 crea una run nueva, su estado inicial y la imprime por
-pantalla. El bucle de juego llegará en fases posteriores.
+Crea una run nueva y abre la ventana del mundo procedural. El control del
+personaje llegará en fases posteriores; aquí solo se renderiza el terreno
+alrededor del chunk (0, 0).
 """
 
 from __future__ import annotations
 
 import logging
 import secrets
+import sqlite3
 
-from config import DEFAULT_TRAIT, SEED_BITS
+import pygame
+
+from config import (
+    CAMERA_START_X,
+    CAMERA_START_Y,
+    DEFAULT_TRAIT,
+    FPS,
+    SEED_BITS,
+    WINDOW_HEIGHT,
+    WINDOW_TITLE,
+    WINDOW_WIDTH,
+)
 from db.database import get_connection, init_db
 from db.repositories import AgentStateRepository, Run, RunRepository
-from game.world import generate_refugio7
+from game.renderer import Renderer
+from game.world import World, generate_refugio7
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +47,44 @@ def create_run(seed: int | None = None) -> Run:
     return run
 
 
+def run_game(
+    run: Run,
+    connection: sqlite3.Connection,
+    max_frames: int | None = None,
+) -> int:
+    """Abre la ventana y ejecuta el bucle de render hasta cerrar."""
+    pygame.init()
+    try:
+        screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        pygame.display.set_caption(WINDOW_TITLE)
+        clock = pygame.time.Clock()
+        world = World(run.id, run.seed, connection)
+        renderer = Renderer(screen)
+
+        frames = 0
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (
+                    event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
+                ):
+                    running = False
+
+            renderer.draw(world, CAMERA_START_X, CAMERA_START_Y)
+            pygame.display.flip()
+            clock.tick(FPS)
+
+            frames += 1
+            if max_frames is not None and frames >= max_frames:
+                running = False
+    finally:
+        pygame.quit()
+
+    return 0
+
+
 def main() -> int:
-    """Inicializa la base de datos y arranca una run."""
+    """Inicializa la base de datos, crea una run y abre el juego."""
     logging.basicConfig(
         level=logging.INFO,
         format="%(levelname)s %(name)s: %(message)s",
@@ -45,7 +95,8 @@ def main() -> int:
         f"Run #{run.id} creada - seed={run.seed}, "
         f"refugio7=({run.refugio7_x}, {run.refugio7_y}), trait={run.trait}"
     )
-    return 0
+    with get_connection() as connection:
+        return run_game(run, connection)
 
 
 if __name__ == "__main__":

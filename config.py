@@ -82,6 +82,22 @@ SEED_BITS: Final[int] = 31
 # Agente DeepSeek.
 DEEPSEEK_MODEL: Final[str] = "deepseek-flash"
 DEEPSEEK_BASE_URL: Final[str] = "https://api.deepseek.com"
+SYSTEM_MIKE_PROMPT_PATH: Final[Path] = PROJECT_ROOT / "agent" / "prompts" / "system_mike.txt"
+AGENT_MAX_TOOL_ROUNDS: Final[int] = 5
+AGENT_HISTORY_LIMIT: Final[int] = 8
+AGENT_TEMPERATURE: Final[float] = 0.7
+
+# Herramientas del agente.
+REST_HEAL: Final[int] = 5
+SCAN_MAX_RADIUS: Final[int] = 4
+WALKABLE_TILE_IDS: Final[frozenset[int]] = frozenset({TILE_SAND, TILE_GRASS, TILE_FOREST})
+TILE_NAMES: Final[dict[int, str]] = {
+    TILE_WATER: "agua",
+    TILE_SAND: "arena",
+    TILE_GRASS: "hierba",
+    TILE_FOREST: "bosque",
+    TILE_ROCK: "roca",
+}
 
 # Simulación por turnos.
 TURN_SECONDS: Final[float] = 5.0
@@ -110,6 +126,20 @@ STARTING_INVENTORY: Final[dict[str, int]] = {
     ITEM_WATER: 2,
     ITEM_SUPPRESSOR: 1,
     ITEM_BANDAGE: 1,
+}
+SCAVENGE_ITEMS: Final[tuple[str, ...]] = (
+    ITEM_FOOD,
+    ITEM_WATER,
+    ITEM_SUPPRESSOR,
+    ITEM_BANDAGE,
+    ITEM_SCRAP,
+)
+ITEM_NAMES: Final[dict[str, str]] = {
+    ITEM_FOOD: "comida",
+    ITEM_WATER: "agua",
+    ITEM_SUPPRESSOR: "supresor",
+    ITEM_BANDAGE: "venda",
+    ITEM_SCRAP: "chatarra",
 }
 
 # HUD.

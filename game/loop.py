@@ -5,7 +5,15 @@ from __future__ import annotations
 import sqlite3
 
 from config import RUN_STATUS_DEAD, TILE_SIZE, TURN_SECONDS
-from db.repositories import AgentStateRepository, Run, RunRepository
+from db.repositories import (
+    AgentStateRepository,
+    ChatMessage,
+    ChatRepository,
+    MemoryEntry,
+    MemoryRepository,
+    Run,
+    RunRepository,
+)
 from game.entities import Mike
 from game.world import World
 
@@ -27,10 +35,42 @@ class GameSession:
         self.events: list[str] = []
         self._state_repository = AgentStateRepository(connection)
         self._run_repository = RunRepository(connection)
+        self._chat_repository = ChatRepository(connection)
+        self._memory_repository = MemoryRepository(connection)
         self._finished = False
         if self._state_repository.get(run.id) is None:
             self._state_repository.create(run.id)
         self.persist()
+
+    def record_chat(
+        self,
+        role: str,
+        content: str | None = None,
+        tool_name: str | None = None,
+        tool_args: dict[str, object] | None = None,
+        tool_call_id: str | None = None,
+    ) -> ChatMessage:
+        """Guarda un mensaje del historial de radio."""
+        return self._chat_repository.add(
+            self.run.id,
+            role,
+            content=content,
+            tool_name=tool_name,
+            tool_args=tool_args,
+            tool_call_id=tool_call_id,
+        )
+
+    def recent_chat(self, limit: int = 8) -> list[ChatMessage]:
+        """Devuelve los últimos mensajes de radio de la run."""
+        return self._chat_repository.list_for_run(self.run.id, limit=limit)
+
+    def remember(self, content: str, importance: int = 1) -> MemoryEntry:
+        """Guarda un recuerdo persistente de Mike."""
+        return self._memory_repository.add(self.run.id, "agent", content, importance)
+
+    def add_event(self, text: str) -> None:
+        """Añade una línea al log de eventos visible en la interfaz."""
+        self.events.append(text)
 
     @property
     def is_over(self) -> bool:

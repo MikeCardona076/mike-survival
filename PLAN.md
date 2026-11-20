@@ -5,10 +5,10 @@ de cada turno y lo actualiza al final de cada fase.
 
 ## ESTADO ACTUAL
 
-- **Fase en curso:** 6
-- **Tarea actual:** Zombis, combate y eventos narrativos
+- **Fase en curso:** 7
+- **Tarea actual:** Sprites procedurales y audio
 - **Última actualización:** 2026-11-19
-- **Commit de referencia:** 06915c2
+- **Commit de referencia:** 2314ff4
 
 ## PLAN DE FASE 1 (COMPLETADO)
 
@@ -72,6 +72,14 @@ de cada turno y lo actualiza al final de cada fase.
 4. Integrar zombis y eventos en `GameSession` y dibujarlos.
 5. Tests de IA, combate, eventos y game over.
 
+## PLAN DE FASE 7
+
+1. Generar 10 sprites PNG con Pillow y cachearlos en `assets_cache`.
+2. Implementar `SpriteSet` y dibujar entidades con sprites.
+3. Generar SFX con pyfxr e integrarlos en el bucle.
+4. Añadir `AssetCacheRepository` y tests de sprites/audio.
+5. Música adaptativa: se omite si no hay BloodMusic, como permite el brief.
+
 ## REGLAS DE ESTE ARCHIVO
 
 1. Antes de empezar una tarea atómica, el agente escribe debajo de
@@ -89,8 +97,8 @@ de cada turno y lo actualiza al final de cada fase.
 - [x] **Fase 3** — Mike, HUD y actualización de estado ✅
 - [x] **Fase 4** — Cliente DeepSeek (`deepseek-flash`) con function calling ✅
 - [x] **Fase 5** — Chat bidireccional Operador ↔ Mike ✅
-- [ ] **Fase 6** — Zombis, combate y eventos narrativos — EN CURSO
-- [ ] **Fase 7** — Assets procedurales (sprites + SFX + música)
+- [x] **Fase 6** — Zombis, combate y eventos narrativos ✅
+- [ ] **Fase 7** — Assets procedurales (sprites + SFX + música) — EN CURSO
 - [ ] **Fase 8** — Docker, Makefile y distribución
 - [ ] **Fase 9** — Persistencia entre runs, meta-progresión y balanceo
 
@@ -178,4 +186,5 @@ de cada turno y lo actualiza al final de cada fase.
 [F3] Mike, inventario, turnos y HUD — OK (338207e)
 [F4] Cliente DeepSeek con function calling y 10 tools — OK (a6f2c70)
 [F5] Chat bidireccional y typewriter — OK (06915c2)
-[F6] Zombis, combate y eventos — INICIO
+[F6] Zombis, combate y eventos — OK (2314ff4)
+[F7] Sprites procedurales y audio — INICIO

@@ -396,3 +396,45 @@ class StatsRepository:
 
     def increment_runs_played(self) -> None:
         self._connection.execute("UPDATE stats SET runs_played = runs_played + 1 WHERE id = 1")
+
+
+class WorldChunkRepository:
+    """Persistencia de chunks generados en la tabla ``world_chunks``."""
+
+    def __init__(self, connection: sqlite3.Connection) -> None:
+        self._connection = connection
+
+    def get_data(self, run_id: int, chunk_x: int, chunk_y: int) -> str | None:
+        row = self._connection.execute(
+            """
+            SELECT data FROM world_chunks
+            WHERE run_id = ? AND chunk_x = ? AND chunk_y = ?
+            """,
+            (run_id, chunk_x, chunk_y),
+        ).fetchone()
+        return None if row is None else str(row["data"])
+
+    def save(
+        self,
+        run_id: int,
+        chunk_x: int,
+        chunk_y: int,
+        seed: int,
+        data: str,
+    ) -> None:
+        self._connection.execute(
+            """
+            INSERT INTO world_chunks (run_id, chunk_x, chunk_y, seed, data)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(run_id, chunk_x, chunk_y)
+            DO UPDATE SET data = excluded.data, generated_at = datetime('now')
+            """,
+            (run_id, chunk_x, chunk_y, seed, data),
+        )
+
+    def count_for_run(self, run_id: int) -> int:
+        row = self._connection.execute(
+            "SELECT COUNT(*) AS total FROM world_chunks WHERE run_id = ?",
+            (run_id,),
+        ).fetchone()
+        return 0 if row is None else int(row["total"])

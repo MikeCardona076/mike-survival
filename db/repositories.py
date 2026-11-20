@@ -377,6 +377,19 @@ class MemoryRepository:
         ).fetchall()
         return [_row_to_memory_entry(row) for row in rows]
 
+    def list_global(self, limit: int = 5) -> list[MemoryEntry]:
+        """Recuerdos compartidos entre runs (run_id NULL)."""
+        rows = self._connection.execute(
+            """
+            SELECT * FROM memory
+            WHERE run_id IS NULL
+            ORDER BY importance DESC, id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [_row_to_memory_entry(row) for row in rows]
+
 
 class EventRepository:
     """Operaciones sobre la tabla ``events``."""
@@ -438,6 +451,11 @@ class StatsRepository:
 
     def increment_runs_played(self) -> None:
         self._connection.execute("UPDATE stats SET runs_played = runs_played + 1 WHERE id = 1")
+
+    def increment_deaths(self) -> int:
+        """Suma una muerte y devuelve el total acumulado."""
+        self._connection.execute("UPDATE stats SET total_deaths = total_deaths + 1 WHERE id = 1")
+        return self.get().total_deaths
 
 
 class WorldChunkRepository:
@@ -519,3 +537,34 @@ class AssetCacheRepository:
     def count(self) -> int:
         row = self._connection.execute("SELECT COUNT(*) AS total FROM assets_cache").fetchone()
         return 0 if row is None else int(row["total"])
+
+
+class MetaProgressionRepository:
+    """Desbloqueos persistentes entre runs."""
+
+    def __init__(self, connection: sqlite3.Connection) -> None:
+        self._connection = connection
+
+    def unlock(self, unlock_key: str, description: str) -> bool:
+        """Desbloquea una clave; devuelve True si era nueva."""
+        cursor = self._connection.execute(
+            """
+            INSERT OR IGNORE INTO meta_progression (unlock_key, description)
+            VALUES (?, ?)
+            """,
+            (unlock_key, description),
+        )
+        return cursor.rowcount > 0
+
+    def is_unlocked(self, unlock_key: str) -> bool:
+        row = self._connection.execute(
+            "SELECT 1 FROM meta_progression WHERE unlock_key = ?",
+            (unlock_key,),
+        ).fetchone()
+        return row is not None
+
+    def list_keys(self) -> list[str]:
+        rows = self._connection.execute(
+            "SELECT unlock_key FROM meta_progression ORDER BY unlocked_at ASC"
+        ).fetchall()
+        return [str(row["unlock_key"]) for row in rows]

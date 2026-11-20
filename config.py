@@ -244,3 +244,39 @@ SPRITE_KEYS: Final[tuple[str, ...]] = (
 ASSET_TYPE_SPRITE: Final[str] = "sprite"
 AUDIO_SAMPLE_RATE: Final[int] = 44100
 AUDIO_VOLUME: Final[float] = 0.35
+
+# Rasgos y meta-progresión.
+TRAIT_NEUTRAL: Final[str] = "neutral"
+TRAIT_RESILIENT: Final[str] = "resiliente"
+TRAIT_SCOUT: Final[str] = "explorador"
+TRAIT_VETERAN: Final[str] = "veterano"
+BASE_TRAITS: Final[tuple[str, ...]] = (
+    TRAIT_NEUTRAL,
+    TRAIT_RESILIENT,
+    TRAIT_SCOUT,
+)
+UNLOCKABLE_TRAITS: Final[tuple[str, ...]] = (TRAIT_VETERAN,)
+TRAIT_MODIFIERS: Final[dict[str, dict[str, int]]] = {
+    TRAIT_NEUTRAL: {},
+    TRAIT_RESILIENT: {
+        "hunger_reduction": 1,
+        "thirst_reduction": 1,
+    },
+    TRAIT_SCOUT: {
+        "melee_bonus": 6,
+    },
+    TRAIT_VETERAN: {
+        "melee_bonus": 4,
+        "infection_reduction": 1,
+    },
+}
+TRAIT_DESCRIPTIONS: Final[dict[str, str]] = {
+    TRAIT_NEUTRAL: "Sin ventajas ni desventajas.",
+    TRAIT_RESILIENT: "Aguanta mejor el hambre y la sed.",
+    TRAIT_SCOUT: "Golpea más fuerte y empieza con más salud.",
+    TRAIT_VETERAN: "Veterano: mucha salud y resistencia al virus.",
+}
+TRAIT_UNLOCK_DEATHS: Final[int] = 10
+META_UNLOCK_VETERAN: Final[str] = "trait_veteran"
+GLOBAL_MEMORY_IMPORTANCE: Final[int] = 3
+GLOBAL_MEMORY_LIMIT: Final[int] = 5

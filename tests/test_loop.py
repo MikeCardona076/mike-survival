@@ -8,10 +8,18 @@ import pytest
 
 pytest.importorskip("noise")
 
-from config import RUN_STATUS_DEAD, TURN_SECONDS  # noqa: E402
+from config import (
+    META_UNLOCK_VETERAN,
+    RUN_STATUS_DEAD,
+    TRAIT_UNLOCK_DEATHS,
+    TURN_SECONDS,
+)  # noqa: E402
 from db.repositories import (  # noqa: E402
     AgentStateRepository,
+    MemoryRepository,
+    MetaProgressionRepository,
     RunRepository,
+    StatsRepository,
 )
 from game.entities import Zombie  # noqa: E402
 from game.loop import GameSession  # noqa: E402
@@ -67,3 +75,31 @@ def test_session_combat_kills_adjacent_zombie(connection: sqlite3.Connection) ->
 
     assert "derriba" in second
     assert session.zombies == []
+
+
+def test_death_saves_global_memory_and_stats(connection: sqlite3.Connection) -> None:
+    run = RunRepository(connection).create(seed=5050, refugio7_x=0, refugio7_y=0)
+    session = GameSession(run, connection)
+    session.mike.take_damage(1000, cause="prueba")
+    session._finish_run()
+
+    assert StatsRepository(connection).get().total_deaths == 1
+    memories = MemoryRepository(connection).list_global()
+    assert any("morí" in entry.content.lower() for entry in memories)
+
+
+def test_ten_deaths_unlock_veteran(connection: sqlite3.Connection) -> None:
+    meta = MetaProgressionRepository(connection)
+
+    for index in range(TRAIT_UNLOCK_DEATHS):
+        run = RunRepository(connection).create(
+            seed=6000 + index,
+            refugio7_x=0,
+            refugio7_y=0,
+        )
+        session = GameSession(run, connection)
+        session.mike.take_damage(1000, cause="prueba")
+        session._finish_run()
+
+    assert StatsRepository(connection).get().total_deaths == TRAIT_UNLOCK_DEATHS
+    assert meta.is_unlocked(META_UNLOCK_VETERAN)

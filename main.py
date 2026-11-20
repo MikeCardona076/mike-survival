@@ -18,7 +18,6 @@ from assets.audio import AudioManager
 from assets.sprites import SpriteSet
 from config import (
     AUDIO_SAMPLE_RATE,
-    DEFAULT_TRAIT,
     FPS,
     MAX_FRAME_DELTA,
     RADIO_COST_MAX,
@@ -29,7 +28,14 @@ from config import (
     WINDOW_WIDTH,
 )
 from db.database import get_connection, init_db
-from db.repositories import AgentStateRepository, Run, RunRepository
+from db.repositories import (
+    AgentStateRepository,
+    MetaProgressionRepository,
+    Run,
+    RunRepository,
+    StatsRepository,
+)
+from game.entities import choose_trait
 from game.loop import GameSession
 from game.renderer import Renderer
 from game.world import generate_refugio7
@@ -84,13 +90,16 @@ def create_run(seed: int | None = None) -> Run:
     actual_seed = secrets.randbits(SEED_BITS) if seed is None else seed
     refugio7_x, refugio7_y = generate_refugio7(actual_seed)
     with get_connection() as connection:
+        unlocked = set(MetaProgressionRepository(connection).list_keys())
+        trait = choose_trait(actual_seed, unlocked)
         run = RunRepository(connection).create(
             seed=actual_seed,
             refugio7_x=refugio7_x,
             refugio7_y=refugio7_y,
-            trait=DEFAULT_TRAIT,
+            trait=trait,
         )
         AgentStateRepository(connection).create(run.id)
+        StatsRepository(connection).increment_runs_played()
     logger.info("Run %s creada con seed %s", run.id, run.seed)
     return run
 

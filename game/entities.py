@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Set
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from config import (
     BANDAGE_HEAL,
+    BASE_TRAITS,
     CHUNK_SIZE,
+    DEFAULT_TRAIT,
     DEHYDRATION_DAMAGE,
     FOOD_HUNGER_RELIEF,
     HUNGER_CRITICAL,
@@ -30,6 +33,8 @@ from config import (
     SUPPRESSOR_RELIEF,
     THIRST_CRITICAL,
     THIRST_PER_TURN,
+    TRAIT_MODIFIERS,
+    UNLOCKABLE_TRAITS,
     WALKABLE_TILE_IDS,
     WATER_THIRST_RELIEF,
     ZOMBIE_ATTACK_COOLDOWN,
@@ -59,6 +64,35 @@ class Mike:
     alive: bool = True
     cause_of_death: str | None = None
     melee_damage: int = MIKE_MELEE_DAMAGE
+    trait: str = DEFAULT_TRAIT
+    hunger_rate: int = HUNGER_PER_TURN
+    thirst_rate: int = THIRST_PER_TURN
+    infection_rate: int = INFECTION_PER_TURN
+
+    @classmethod
+    def from_trait(cls, trait: str) -> Mike:
+        """Crea a Mike aplicando los modificadores de su rasgo."""
+        modifiers = TRAIT_MODIFIERS.get(trait, {})
+        return cls(
+            trait=trait,
+            health=min(
+                MAX_HEALTH,
+                STARTING_HEALTH + modifiers.get("health_bonus", 0),
+            ),
+            melee_damage=MIKE_MELEE_DAMAGE + modifiers.get("melee_bonus", 0),
+            hunger_rate=max(
+                0,
+                HUNGER_PER_TURN - modifiers.get("hunger_reduction", 0),
+            ),
+            thirst_rate=max(
+                0,
+                THIRST_PER_TURN - modifiers.get("thirst_reduction", 0),
+            ),
+            infection_rate=max(
+                0,
+                INFECTION_PER_TURN - modifiers.get("infection_reduction", 0),
+            ),
+        )
 
     def advance_turn(self) -> list[str]:
         """Avanza un turno de simulación y devuelve los eventos relevantes."""
@@ -66,9 +100,9 @@ class Mike:
             return []
 
         self.turn_count += 1
-        self.hunger = min(MAX_HUNGER, self.hunger + HUNGER_PER_TURN)
-        self.thirst = min(MAX_THIRST, self.thirst + THIRST_PER_TURN)
-        self.infection = min(MAX_INFECTION, self.infection + INFECTION_PER_TURN)
+        self.hunger = min(MAX_HUNGER, self.hunger + self.hunger_rate)
+        self.thirst = min(MAX_THIRST, self.thirst + self.thirst_rate)
+        self.infection = min(MAX_INFECTION, self.infection + self.infection_rate)
 
         damage = 0
         causes: list[str] = []
@@ -245,3 +279,14 @@ def spawn_zombies(
             occupied.add((x, y))
             break
     return zombies
+
+
+def available_traits(unlocked: Set[str] = frozenset()) -> tuple[str, ...]:
+    """Rasgos disponibles según la meta-progresión."""
+    extra = tuple(trait for trait in UNLOCKABLE_TRAITS if trait in unlocked)
+    return (*BASE_TRAITS, *extra)
+
+
+def choose_trait(seed: int, unlocked: Set[str] = frozenset()) -> str:
+    """Elige un rasgo determinista a partir de la seed de la run."""
+    return random.Random(seed).choice(available_traits(unlocked))

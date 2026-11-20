@@ -39,6 +39,9 @@ class FakeSession:
     def recent_chat(self, limit: int = 8) -> list[Any]:
         return []
 
+    def global_memories(self, limit: int = 5) -> list[Any]:
+        return []
+
     def record_chat(
         self,
         role: str,

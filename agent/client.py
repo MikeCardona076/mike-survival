@@ -14,6 +14,7 @@ from config import (
     AGENT_TEMPERATURE,
     DEEPSEEK_BASE_URL,
     DEEPSEEK_MODEL,
+    GLOBAL_MEMORY_LIMIT,
     ITEM_NAMES,
     PROJECT_ROOT,
     SYSTEM_MIKE_PROMPT_PATH,
@@ -105,15 +106,20 @@ class AgentClient:
             f"{ITEM_NAMES.get(item, item)} x{quantity}"
             for item, quantity in sorted(mike.inventory.items.items())
         )
+        get_memories = getattr(self._session, "global_memories", None)
+        memories = get_memories(GLOBAL_MEMORY_LIMIT) if callable(get_memories) else []
+        memory_text = "\n".join(f"- {entry.content}" for entry in memories) or "ninguno"
         return (
             "ESTADO ACTUAL DE MIKE:\n"
             f"Turno: {mike.turn_count}\n"
             f"Posición: ({int(mike.pos_x)}, {int(mike.pos_y)})\n"
+            f"Rasgo: {mike.trait}\n"
             f"Salud: {mike.health}/100 | Hambre: {mike.hunger}/100 | "
             f"Sed: {mike.thirst}/100 | Infección: {mike.infection}/100 | "
             f"Radio: {mike.radio_battery}%\n"
             f"Inventario: {inventory or 'vacío'}\n"
-            f"Estado: {'vivo' if mike.alive else 'muerto'}"
+            f"Estado: {'vivo' if mike.alive else 'muerto'}\n"
+            f"Recuerdos de runs anteriores:\n{memory_text}"
         )
 
     def _history_messages(self, history: list[Any]) -> list[dict[str, str]]:

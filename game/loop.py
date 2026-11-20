@@ -6,10 +6,13 @@ import random
 import sqlite3
 
 from config import (
+    GLOBAL_MEMORY_IMPORTANCE,
     INITIAL_ZOMBIES,
     MAX_ZOMBIES,
+    META_UNLOCK_VETERAN,
     RUN_STATUS_DEAD,
     TILE_SIZE,
+    TRAIT_UNLOCK_DEATHS,
     TURN_SECONDS,
     ZOMBIE_SPAWN_CHANCE,
 )
@@ -20,8 +23,10 @@ from db.repositories import (
     EventRepository,
     MemoryEntry,
     MemoryRepository,
+    MetaProgressionRepository,
     Run,
     RunRepository,
+    StatsRepository,
 )
 from game.combat import attack_zombie
 from game.entities import Mike, Zombie, spawn_zombies
@@ -41,7 +46,7 @@ class GameSession:
         self.run = run
         self.connection = connection
         self.world = World(run.id, run.seed, connection)
-        self.mike = Mike() if mike is None else mike
+        self.mike = Mike.from_trait(run.trait) if mike is None else mike
         self.elapsed_seconds = 0.0
         self.events: list[str] = []
         self._state_repository = AgentStateRepository(connection)
@@ -49,6 +54,8 @@ class GameSession:
         self._chat_repository = ChatRepository(connection)
         self._memory_repository = MemoryRepository(connection)
         self._event_repository = EventRepository(connection)
+        self._stats_repository = StatsRepository(connection)
+        self._meta_repository = MetaProgressionRepository(connection)
         self._finished = False
         if self._state_repository.get(run.id) is None:
             self._state_repository.create(run.id)
@@ -86,6 +93,14 @@ class GameSession:
     def remember(self, content: str, importance: int = 1) -> MemoryEntry:
         """Guarda un recuerdo persistente de Mike."""
         return self._memory_repository.add(self.run.id, "agent", content, importance)
+
+    def remember_global(self, content: str, importance: int = 3) -> MemoryEntry:
+        """Guarda un recuerdo compartido entre todas las runs."""
+        return self._memory_repository.add(None, "global", content, importance)
+
+    def global_memories(self, limit: int = 5) -> list[MemoryEntry]:
+        """Recuerdos de runs anteriores para el prompt de Mike."""
+        return self._memory_repository.list_global(limit)
 
     def add_event(self, text: str) -> None:
         """Añade una línea al log de eventos visible en la interfaz."""
@@ -189,8 +204,23 @@ class GameSession:
         if self._finished:
             return
         self._finished = True
-        self._run_repository.finish(
-            self.run.id,
-            RUN_STATUS_DEAD,
-            self.mike.cause_of_death or "causa desconocida",
+        cause = self.mike.cause_of_death or "causa desconocida"
+        self._run_repository.finish(self.run.id, RUN_STATUS_DEAD, cause)
+        deaths = self._stats_repository.increment_deaths()
+        self.remember_global(
+            (
+                f"En la run {self.run.id} morí en el turno "
+                f"{self.mike.turn_count} por {cause}. Debo evitarlo."
+            ),
+            GLOBAL_MEMORY_IMPORTANCE,
         )
+        if deaths >= TRAIT_UNLOCK_DEATHS:
+            newly_unlocked = self._meta_repository.unlock(
+                META_UNLOCK_VETERAN,
+                "Rasgo veterano desbloqueado tras 10 muertes.",
+            )
+            if newly_unlocked:
+                self.remember_global(
+                    "Diez muertes después, el virus ya no me asusta igual.",
+                    5,
+                )

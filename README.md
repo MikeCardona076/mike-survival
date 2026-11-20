@@ -7,8 +7,15 @@ de DeepSeek (`deepseek-flash`) con function calling.
 
 ## Estado
 
-**Fase 1 completa:** esqueleto del proyecto, esquema SQLite, capa de
-conexión y repositorios, más una run de prueba ejecutable.
+**Fase 2 completa:** mundo procedural por chunks de 32×32 tiles con dos
+capas de Perlin (elevación y humedad), persistencia de chunks en SQLite,
+renderer con viewport culling y ventana pygame de 1280×720.
+
+**Fase 1 completa:** esquema SQLite, capa de conexión, repositorios y
+creación de runs.
+
+Al ejecutar `python main.py` se crea una run nueva y se muestra el chunk
+(0,0) centrado en pantalla. `Esc` o cerrar la ventana termina la sesión.
 
 ## Stack
 
@@ -48,8 +55,8 @@ herramientas, `ui/` HUD y chat, `assets/` sprites y audio procedural,
 
 ## Hoja de ruta
 
-1. Esqueleto, BD y repositorios
-2. Mundo procedural con chunks
+1. ✅ Esqueleto, BD y repositorios
+2. ✅ Mundo procedural con chunks y Perlin
 3. Mike, HUD y estado
 4. Cliente DeepSeek con function calling
 5. Chat bidireccional

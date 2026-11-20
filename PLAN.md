@@ -5,10 +5,10 @@ de cada turno y lo actualiza al final de cada fase.
 
 ## ESTADO ACTUAL
 
-- **Fase en curso:** 2 (pendiente de aprobación del Operador)
-- **Tarea actual:** Fase 1 cerrada; esperando aprobación para iniciar Fase 2
+- **Fase en curso:** 3 (pendiente de aprobación del Operador)
+- **Tarea actual:** Fase 2 cerrada; esperando aprobación para iniciar Fase 3
 - **Última actualización:** 2026-11-19
-- **Commit de referencia:** d340dc4
+- **Commit de referencia:** faf6980
 
 ## PLAN DE FASE 1 (COMPLETADO)
 
@@ -24,6 +24,19 @@ de cada turno y lo actualiza al final de cada fase.
 5. Escribir `main.py` (crea Run #1 y la imprime) y ≥4 tests de
    repositorios; validar con `pytest`, `ruff` y `black`; commit atómico.
 
+## PLAN DE FASE 2 (COMPLETADO)
+
+1. Añadir a `config.py` las constantes de terreno, ruido Perlin, paleta
+   de tiles y tamaño de chunk en píxeles.
+2. Implementar `TileType`, `Chunk`, `generate_chunk()` (2 capas Perlin:
+   elevación y humedad), serialización JSON y la clase `World` con caché.
+3. Añadir `WorldChunkRepository` y persistir/recuperar chunks en
+   `world_chunks` por `(run_id, chunk_x, chunk_y)`.
+4. Implementar `Renderer` con viewport culling por chunks y pintado de
+   tiles a 16 px.
+5. Conectar `main.py` a una ventana pygame 1280×720 centrada en el chunk
+   (0,0); tests headless, verificación Docker y cierre de fase.
+
 ## REGLAS DE ESTE ARCHIVO
 
 1. Antes de empezar una tarea atómica, el agente escribe debajo de
@@ -37,7 +50,7 @@ de cada turno y lo actualiza al final de cada fase.
 ## ROADMAP DE FASES
 
 - [x] **Fase 1** — Esqueleto, BD y repositorios SQLite ✅
-- [ ] **Fase 2** — Mundo procedural con chunks y Perlin noise
+- [x] **Fase 2** — Mundo procedural con chunks y Perlin noise ✅
 - [ ] **Fase 3** — Mike, HUD y actualización de estado
 - [ ] **Fase 4** — Cliente DeepSeek (`deepseek-flash`) con function calling
 - [ ] **Fase 5** — Chat bidireccional Operador ↔ Mike
@@ -124,3 +137,6 @@ de cada turno y lo actualiza al final de cada fase.
 [F1] Esquema SQLite, conexión WAL/FK y repositorios — OK (e196d03)
 [F1] Run inicial, Refugio 7 determinista y tests — OK (d340dc4)
 [F1] Verificación final: 15 tests, ruff, black y `main.py` — OK (d340dc4)
+[F2] Generación de chunks con 2 capas Perlin y persistencia — OK (a1f1a43)
+[F2] Renderer con viewport culling y ventana pygame — OK (faf6980)
+[F2] Verificación Docker: 28 tests, ruff, black y smoke de ventana — OK (faf6980)
